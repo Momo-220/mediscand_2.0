@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MediScan - Application d'Analyse de Médicaments
 
-## Getting Started
+MediScan est une application web permettant d'analyser des médicaments à partir de photos et de fournir des informations détaillées sur ceux-ci. L'application utilise Firebase pour l'authentification des utilisateurs et le stockage des analyses effectuées.
 
-First, run the development server:
+## Fonctionnalités
 
+- Analyse de médicaments par photo (via caméra ou upload)
+- Affichage détaillé des informations sur les médicaments
+- Authentification des utilisateurs (inscription, connexion, réinitialisation de mot de passe)
+- Sauvegarde des analyses dans une base de données Firebase
+- Historique des analyses pour chaque utilisateur
+- Interface responsive et moderne
+
+## Prérequis
+
+- Node.js (v16 ou supérieur)
+- Compte Firebase
+
+## Installation
+
+1. Clonez ce dépôt :
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <URL_DU_REPO>
+cd mediscan
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Installez les dépendances :
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Configuration de Firebase :
+   - Créez un nouveau projet sur la [Console Firebase](https://console.firebase.google.com/)
+   - Activez l'authentification par email/mot de passe dans la section "Authentication"
+   - Créez une base de données Firestore dans la section "Firestore Database"
+   - Activez le stockage Firebase dans la section "Storage"
+   - Dans les paramètres du projet, ajoutez une application web et copiez les informations de configuration
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Créez un fichier `.env.local` à la racine du projet avec les informations suivantes :
+```
+NEXT_PUBLIC_FIREBASE_API_KEY=votre_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=votre_auth_domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=votre_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=votre_storage_bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=votre_messaging_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=votre_app_id
+```
 
-## Learn More
+5. Lancez l'application en mode développement :
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+L'application sera accessible à l'adresse [http://localhost:3000](http://localhost:3000).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Déploiement
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Pour déployer l'application, vous pouvez utiliser Vercel, Netlify ou tout autre service de déploiement compatible avec Next.js.
 
-## Deploy on Vercel
+### Déploiement avec Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Installez la CLI Vercel :
+```bash
+npm install -g vercel
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. Déployez l'application :
+```bash
+vercel
+```
+
+## Structure du projet
+
+- `/public` - Ressources statiques
+- `/src` - Code source de l'application
+  - `/app` - Structure des pages (Next.js App Router)
+  - `/components` - Composants React réutilisables
+  - `/firebase` - Configuration et services Firebase
+  - `/styles` - Feuilles de style globales
+
+## Configuration des règles Firestore
+
+Pour sécuriser votre base de données, voici les règles Firestore recommandées :
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null;
+    }
+    match /analyses/{analyseId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null;
+    }
+  }
+}
+```
+
+## Configuration des règles Storage
+
+Pour sécuriser votre stockage, voici les règles Storage recommandées :
+
+```
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /images/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+## Technologies utilisées
+
+- Next.js - Framework React
+- Tailwind CSS - Framework CSS pour le design
+- Firebase - Backend as a Service (Authentification, Firestore, Storage)
+- Framer Motion - Bibliothèque d'animations
+- React Hot Toast - Notifications
+- Date-fns - Bibliothèque de manipulation de dates
+
+## Licence
+
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus d'informations.

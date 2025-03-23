@@ -1,0 +1,18 @@
+{
+  "name": "MediScan",
+  "short_name": "MediScan",
+  "description": "Application d'analyse de médicaments par IA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0F7AFF",
+  "icons": [
+    {
+      "src": "/images/logo-app.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+} 
+ 
+ 
