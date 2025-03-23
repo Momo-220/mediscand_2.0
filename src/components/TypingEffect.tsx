@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 
 interface TypingEffectProps {
   text: string;
@@ -100,7 +100,7 @@ export default function TypingEffect({
 
     // Calculer le délai de base pour l'ajout du caractère suivant
     // Plus fluide que la version précédente, avec des "rafales" de caractères
-    let burstMode = Math.random() < 0.7; // 70% de chance d'être en mode "rafale"
+    const burstMode = Math.random() < 0.7; // 70% de chance d'être en mode "rafale"
     let baseDelay = speed;
     
     if (burstMode) {
@@ -141,14 +141,14 @@ export default function TypingEffect({
   }, [displayedText]);
 
   // Effet de clignotement du curseur amélioré
-  const cursorVariants = {
+  const cursorVariants: Variants = {
     blink: {
-      opacity: [1, 1, 0, 0, 1, 1],
+      opacity: [0, 1, 0],
       transition: {
-        duration: 1.2,
+        duration: 1,
         repeat: Infinity,
         repeatType: "loop",
-        ease: "linear",
+        ease: "linear"
       }
     }
   };
