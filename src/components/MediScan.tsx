@@ -148,9 +148,6 @@ export default function MediScan() {
       
       // Appel à l'API réelle d'analyse d'image de médicament
       try {
-        // Indiquer le début de l'analyse
-        toast.loading("Analyse de l'image en cours...");
-        
         // Préparer les données pour l'API
         const formData = new FormData();
         formData.append('image', file);
@@ -168,9 +165,6 @@ export default function MediScan() {
         
         // Récupérer les résultats de l'analyse
         const analysisResult = await response.json();
-        
-        // Fermer la notification de chargement
-        toast.dismiss();
         
         // Créer l'objet résultat à partir des données réelles
         const resultat: AnalyseResultat = {
@@ -651,18 +645,18 @@ export default function MediScan() {
                 exit={{ opacity: 0 }}
                 className="flex flex-col items-center justify-center py-20"
               >
-                <div className="relative w-24 h-24">
+                <div className="relative w-32 h-32 sm:w-40 sm:h-40">
                   <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-200 border-t-[#89CFF0] rounded-full animate-spin"></div>
-                  <div className="absolute top-2 left-2 right-2 bottom-2 bg-white rounded-full flex items-center justify-center">
+                  <div className="absolute top-3 left-3 right-3 bottom-3 bg-white rounded-full flex items-center justify-center">
                     <img 
                       src="/images/logo-app.png" 
                       alt="MediScan Logo" 
-                      className="w-16 h-16 object-contain rounded-full"
+                      className="w-24 h-24 sm:w-32 sm:h-32 object-contain rounded-full"
                     />
                   </div>
                 </div>
-                <p className="mt-6 text-lg font-medium text-gray-800">Analyse en cours...</p>
-                <p className="text-gray-600 mt-2">Veuillez patienter quelques instants</p>
+                <p className="mt-8 text-xl font-medium text-gray-800">Analyse en cours...</p>
+                <p className="text-gray-600 mt-3 text-lg">Veuillez patienter quelques instants</p>
               </motion.div>
             )}
 
