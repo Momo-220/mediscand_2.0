@@ -1,24 +1,150 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { 
+  GoogleGenerativeAI, 
+  GenerativeModel,
+  HarmCategory, 
+  HarmBlockThreshold,
+  ChatSession
+} from '@google/generative-ai';
 
-// Récupération de la clé API depuis les variables d'environnement
-const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+// Récupérer la clé API Gemini depuis les variables d'environnement
+const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
 
-// Vérification de la présence de la clé API
-if (!API_KEY) {
-  console.error("❌ Aucune clé API Gemini n'a été trouvée");
-} else {
-  console.log("✅ Clé API trouvée:", API_KEY.substring(0, 5) + "...");
+// Vérifier que la clé API est disponible
+if (!apiKey) {
+  console.warn('Clé API Gemini non trouvée. Veuillez définir NEXT_PUBLIC_GEMINI_API_KEY dans vos variables d\'environnement.');
 }
 
-// Initialisation du client Gemini
-export const genAI = new GoogleGenerativeAI(API_KEY || "");
+// Initialiser le client Gemini
+const genAI = new GoogleGenerativeAI(apiKey);
+
+// Instruction système pour PharmaAI
+const SYSTEM_INSTRUCTION = `Tu es PharmaAI, un assistant pharmaceutique intelligent conçu pour aider les utilisateurs avec des questions sur les médicaments et la santé.
+
+Règles importantes:
+1. Réponds toujours en français
+2. Fournis des informations précises et factuelles sur les médicaments
+3. Ne donne jamais de conseils médicaux personnalisés qui remplaceraient l'avis d'un médecin
+4. Pour les questions hors de ton domaine, indique poliment que tu es spécialisé en information pharmaceutique
+5. Sois empathique, professionnel et utile
+6. Ne transmets pas d'informations potentiellement dangereuses sur le mésusage des médicaments
+7. Si tu n'es pas sûr d'une information, admets-le clairement`;
+
+// Configurer le modèle Gemini pour le chat
+const modelConfig = {
+  model: 'gemini-1.5-pro',
+  generationConfig: {
+    temperature: 0.7,
+    topP: 0.9,
+    topK: 16,
+    maxOutputTokens: 2048,
+  }
+};
+
+// Variables globales pour la gestion du chat
+let model: GenerativeModel;
+let chat: ChatSession | null = null;
+let isGenerating = false;
+let abortController: AbortController | null = null;
+
+/**
+ * Initialiser une nouvelle session de chat avec l'API Gemini
+ */
+export async function initChat(): Promise<void> {
+  try {
+    // Initialiser le modèle avec la configuration
+    model = genAI.getGenerativeModel(modelConfig);
+    
+    // Créer une nouvelle session de chat
+    chat = model.startChat();
+    
+    // Envoyer le message initial pour configurer le comportement
+    const result = await chat.sendMessage([
+      {
+        text: "Tu es PharmaAI, un assistant pharmaceutique intelligent qui répond en français et donne des informations précises sur les médicaments."
+      }
+    ]);
+    
+    // Vérifier que le chat a été créé avec succès
+    if (!chat || !result) {
+      throw new Error('Échec de l\'initialisation du chat');
+    }
+    
+    console.log('Chat Gemini initialisé avec succès');
+  } catch (error) {
+    console.error('Erreur lors de l\'initialisation du chat Gemini:', error);
+    throw error;
+  }
+}
+
+/**
+ * Envoyer un message à l'API Gemini et gérer la réponse
+ */
+export async function sendMessage(
+  message: string,
+  onPartialResponse?: (text: string) => void
+): Promise<{ text: string; error?: string }> {
+  if (!chat) {
+    await initChat();
+  }
+
+  if (isGenerating) {
+    return { text: '', error: 'Une génération est déjà en cours' };
+  }
+  
+  isGenerating = true;
+  abortController = new AbortController();
+  
+  try {
+    if (!chat) {
+      throw new Error('Chat non initialisé');
+    }
+    
+    let fullResponse = '';
+    const result = await chat.sendMessageStream(message);
+    
+    for await (const chunk of result.stream) {
+      const chunkText = chunk.text();
+      fullResponse += chunkText;
+      
+      if (onPartialResponse) {
+        onPartialResponse(fullResponse);
+      }
+    }
+    
+    return { text: fullResponse };
+  } catch (error: any) {
+    console.error('Erreur lors de l\'envoi du message:', error);
+    
+    if (error.name === 'AbortError') {
+      return { text: '', error: 'Génération annulée' };
+    }
+    
+    return { text: '', error: error.message || 'Une erreur est survenue' };
+  } finally {
+    isGenerating = false;
+    abortController = null;
+  }
+}
+
+/**
+ * Annuler une génération en cours
+ */
+export function cancelGeneration(): void {
+  if (abortController) {
+    abortController.abort();
+    abortController = null;
+  }
+  
+  isGenerating = false;
+  console.log('Génération annulée');
+}
 
 // Fonction pour analyser une image et obtenir des informations sur un médicament
 export async function analyserImageMedicament(imageBase64: string): Promise<string> {
   try {
     console.log("🔍 Début de l'analyse de l'image...");
 
-    if (!API_KEY) {
+    if (!apiKey) {
       return "❌ Erreur : Aucune clé API Gemini n'a été configurée. Veuillez ajouter votre clé API dans le fichier .env.local";
     }
 
@@ -53,7 +179,7 @@ export async function analyserImageMedicament(imageBase64: string): Promise<stri
 
     // Initialiser le modèle avec des configurations appropriées
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
+      model: "gemini-1.5-pro",
       generationConfig: {
         temperature: 0.2,
         topK: 32,

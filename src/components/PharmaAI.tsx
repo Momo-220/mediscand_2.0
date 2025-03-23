@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User } from 'firebase/auth';
 import FormattedMessage from './FormattedMessage';
+import { sendMessage, cancelGeneration, initChat } from '../lib/gemini';
+import { toast } from 'react-hot-toast';
 
 interface PharmaAIProps {
   user: User | null;
@@ -23,15 +25,20 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
     {
       id: "initial-message",
       role: 'assistant',
-      content: "Bonjour, je suis Dr. PharmaAI, votre expert pharmaceutique. Je peux vous renseigner sur les médicaments, leurs indications, dosages, effets secondaires, interactions et contre-indications. Comment puis-je vous aider aujourd'hui?",
+      content: "Initialisation de PharmaAI...",
       timestamp: new Date()
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isChatInitialized, setIsChatInitialized] = useState(false);
+  const [initError, setInitError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const [processingMessageId, setProcessingMessageId] = useState<string | null>(null);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [visibleChars, setVisibleChars] = useState<number[]>([0]);
 
   // Générer un ID unique pour chaque message
   const generateId = () => {
@@ -57,6 +64,34 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
     };
   }, []);
 
+  // Au début du composant PharmaAI, initialiser le chat
+  useEffect(() => {
+    const initializeChat = async () => {
+      try {
+        await initChat();
+        setIsChatInitialized(true);
+        setMessages([{
+          id: "initial-message",
+          role: 'assistant',
+          content: "Je suis PharmaAI, un assistant pharmaceutique intelligent. Je suis conçu pour fournir des informations sur les médicaments, mais je ne suis pas un substitut à un professionnel de la santé. N'hésitez pas à me poser vos questions, mais rappelez-vous de toujours consulter un médecin ou un pharmacien pour tout problème de santé.",
+          timestamp: new Date()
+        }]);
+      } catch (error) {
+        console.error('Erreur lors de l\'initialisation du chat:', error);
+        setInitError('Erreur lors de l\'initialisation du chat. Veuillez réessayer.');
+        toast.error('Erreur lors de l\'initialisation du chat');
+      }
+    };
+
+    initializeChat();
+    
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
   // Fonction pour appeler l'API Gemini
   const callGeminiAPI = async (prompt: string) => {
     try {
@@ -71,22 +106,7 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
             role: "user",
             parts: [
               {
-                text: `Tu es Dr. PharmaAI, un pharmacien expert avec une expertise spécifique en pharmacologie, galénique, et conseils thérapeutiques.
-
-                Pour toutes les questions pharmaceutiques, tu dois:
-                1. Donner des informations précises et basées sur la science
-                2. Toujours mentionner la DCI (Dénomination Commune Internationale) à côté des noms commerciaux
-                3. Préciser les classes pharmacologiques et thérapeutiques
-                4. Détailler les formes galéniques disponibles quand c'est pertinent
-                5. Mentionner le statut (prescription obligatoire ou non)
-                6. Indiquer clairement les contre-indications et précautions d'emploi
-                7. Rappeler systématiquement l'importance de consulter un professionnel de santé
-
-                Utilise une structure claire avec des sous-titres quand ta réponse est longue.
-                Utilise un ton professionnel mais accessible, comme un pharmacien d'officine expérimenté parlant à un patient.
-                Réponds en français, avec la terminologie pharmaceutique appropriée.
-                
-                Question du patient: ${prompt}`
+                text: prompt
               }
             ]
           }
@@ -96,25 +116,7 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
           topK: 40,
           topP: 0.8,
           maxOutputTokens: 1024,
-        },
-        safetySettings: [
-          {
-            category: "HARM_CATEGORY_HARASSMENT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-          },
-          {
-            category: "HARM_CATEGORY_HATE_SPEECH",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-          },
-          {
-            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-          },
-          {
-            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-          }
-        ]
+        }
       };
 
       // Générer un ID unique pour le message de l'assistant
@@ -128,9 +130,9 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
         isStreaming: true
       }]);
 
-      // Appeler l'API Gemini avec streaming
+      // Appeler l'API Gemini
       const response = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + process.env.NEXT_PUBLIC_GEMINI_API_KEY,
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=" + process.env.NEXT_PUBLIC_GEMINI_API_KEY,
         {
           method: "POST",
           headers: {
@@ -220,50 +222,119 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Fonction pour envoyer un message
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!inputMessage.trim() || isProcessing) return;
+    if (!inputMessage.trim()) return;
     
-    // Ajout du message utilisateur
+    if (!isChatInitialized) {
+      toast.error('Le chat est en cours d\'initialisation, veuillez patienter...');
+      return;
+    }
+
+    if (initError) {
+      toast.error('Une erreur est survenue. Veuillez rafraîchir la page.');
+      return;
+    }
+
     const userMessage: Message = {
       id: generateId(),
       role: 'user',
-      content: inputMessage.trim(),
+      content: inputMessage,
       timestamp: new Date()
     };
-    
-    // Ajout immédiat du message utilisateur dans la liste
+
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsProcessing(true);
-    
+
     try {
-      // Appel à l'API Gemini
-      await callGeminiAPI(userMessage.content);
+      // Ajouter un message temporaire de l'assistant
+      const tempAssistantMessage: Message = {
+        id: generateId(),
+        role: 'assistant',
+        content: '',
+        timestamp: new Date(),
+        isStreaming: true
+      };
+      
+      setMessages(prev => [...prev, tempAssistantMessage]);
+
+      const response = await sendMessage(inputMessage, (partialResponse) => {
+        setMessages(prev => {
+          const lastMessage = prev[prev.length - 1];
+          if (lastMessage.role === 'assistant' && lastMessage.isStreaming) {
+            return [
+              ...prev.slice(0, -1),
+              { ...lastMessage, content: partialResponse }
+            ];
+          }
+          return prev;
+        });
+      });
+
+      if (response.error) {
+        toast.error(response.error);
+        return;
+      }
+
+      setMessages(prev => {
+        const lastMessage = prev[prev.length - 1];
+        if (lastMessage.role === 'assistant' && lastMessage.isStreaming) {
+          return [
+            ...prev.slice(0, -1),
+            { ...lastMessage, content: response.text, isStreaming: false }
+          ];
+        }
+        return prev;
+      });
     } catch (error) {
-      console.error("Erreur:", error);
+      console.error('Erreur lors de l\'envoi du message:', error);
+      toast.error('Erreur lors de l\'envoi du message');
     } finally {
       setIsProcessing(false);
     }
   };
 
+  // Je réimplémente la fonction handleKeyDown qui a été supprimée
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e as unknown as React.FormEvent);
+      handleSendMessage(e as unknown as React.FormEvent);
     }
   };
 
-  // Fonction pour annuler une requête en cours
-  const cancelRequest = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-    
-    // Mettre à jour l'UI
+  // Dans la fonction handleCancelRequest, utiliser cancelGeneration
+  const handleCancelRequest = () => {
+    cancelGeneration();
     setIsProcessing(false);
+    setProcessingMessageId(null);
+    setIsStreaming(false);
+    
+    // Mettre à jour le dernier message pour indiquer l'annulation
+    setMessages(prev => {
+      const updated = [...prev];
+      const lastIndex = updated.length - 1;
+      if (lastIndex >= 0 && updated[lastIndex].role === 'assistant') {
+        if (updated[lastIndex].content.trim() === '') {
+          // Si le message est vide, ajouter un message d'annulation
+          updated[lastIndex] = { 
+            ...updated[lastIndex], 
+            content: "La génération a été annulée." 
+          };
+        } else {
+          // Sinon, ajouter une note d'annulation
+          updated[lastIndex] = { 
+            ...updated[lastIndex], 
+            content: updated[lastIndex].content + " [Génération annulée]" 
+          };
+        }
+      }
+      return updated;
+    });
+    
+    toast.success("Génération annulée");
   };
 
   // Détecter les changements de taille de la fenêtre pour le mode responsive
@@ -350,7 +421,7 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
                     {message.isStreaming && (
                       <div className="mt-1 text-right">
                         <button 
-                          onClick={cancelRequest}
+                          onClick={handleCancelRequest}
                           className="text-xs px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 hover:bg-red-500/20"
                         >
                           Annuler
@@ -374,7 +445,7 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
           </div>
         </div>
         
-        <form onSubmit={handleSubmit} className="p-3 bg-white border-t border-gray-200">
+        <form onSubmit={handleSendMessage} className="p-3 bg-white border-t border-gray-200">
           <div className="max-w-2xl mx-auto">
             <div className="flex items-end gap-2">
               <div className="flex-1 bg-gray-100 rounded-lg px-3 py-2 shadow-inner">

@@ -29,35 +29,34 @@ export async function POST(request: NextRequest) {
     const imageBytes = await imageFile.arrayBuffer();
     const base64Image = Buffer.from(imageBytes).toString("base64");
 
-    // Utiliser le modèle Gemini pour analyser l'image
+    // Utiliser le modèle Gemini 2.0 Flash pour une meilleure performance
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-pro-latest",
+      model: "gemini-2.0-flash",
     });
 
-    // Définir le prompt pour l'analyse de médicaments
+    // Définir le prompt pour l'analyse de médicaments, optimisé pour Gemini 2.0 Flash
     const prompt = `
-      Analyse cette image de médicament et fournis une analyse détaillée. 
-      Identifie le médicament et donne les informations suivantes dans un format structuré JSON:
+      Analyse cette image de médicament et identifie-le avec précision.
+      Fournis les informations suivantes au format JSON strict:
       
-      1. nom (nom commercial du médicament)
-      2. description (brève description du médicament et son usage)
-      3. nomCommercial (le nom commercial complet)
-      4. laboratoire (le fabricant)
-      5. dci (Dénomination Commune Internationale, le principe actif)
-      6. formePharmaceutique (comprimé, gélule, etc.)
-      7. dosage (dosage du principe actif)
-      8. classeTherapeutique (type de médicament et action)
-      9. indicationsTherapeutiques (à quoi sert le médicament)
-      10. posologie (comment le prendre)
-      11. conservation (comment conserver le médicament)
-      
-      SI TU N'ARRIVES PAS À IDENTIFIER LE MÉDICAMENT DE FAÇON SÛRE, réponds uniquement avec:
       {
-        "nom": "Médicament non identifié", 
-        "description": "L'image ne permet pas d'identifier le médicament avec certitude."
+        "nom": "nom commercial du médicament",
+        "description": "brève description du médicament et son usage principal",
+        "nomCommercial": "nom commercial complet avec dosage",
+        "laboratoire": "fabricant du médicament",
+        "dci": "principe(s) actif(s) / Dénomination Commune Internationale",
+        "formePharmaceutique": "comprimé, gélule, sirop, etc.",
+        "dosage": "quantité de principe actif",
+        "classeTherapeutique": "catégorie pharmacologique",
+        "indicationsTherapeutiques": "pathologies traitées et usages thérapeutiques",
+        "posologie": "instructions de prise et dosage recommandé",
+        "conservation": "conditions de conservation"
       }
       
-      RÉPONDS UNIQUEMENT AVEC UN OBJET JSON VALIDE, SANS COMMENTAIRES ADDITIONNELS.
+      Si tu ne peux pas identifier le médicament avec certitude, réponds avec:
+      {"nom": "Médicament non identifié", "description": "L'image ne permet pas d'identifier le médicament avec certitude."}
+      
+      IMPORTANTE: Réponds UNIQUEMENT avec le JSON formaté, sans texte supplémentaire.
     `;
 
     // Générer la réponse
@@ -74,9 +73,15 @@ export async function POST(request: NextRequest) {
     const response = await result.response;
     const responseText = response.text();
     
+    console.log("Réponse Gemini brute:", responseText.substring(0, 200) + "...");
+    
     // Essayer de parser la réponse JSON
     try {
-      const jsonResponse = JSON.parse(responseText.trim());
+      // Nettoyer la réponse pour extraire uniquement le JSON
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      const jsonString = jsonMatch ? jsonMatch[0] : responseText.trim();
+      
+      const jsonResponse = JSON.parse(jsonString);
       
       // Retourner les informations extraites
       return NextResponse.json({
@@ -90,7 +95,8 @@ export async function POST(request: NextRequest) {
         success: false,
         message: "Impossible de traiter la réponse",
         nom: "Médicament non identifié",
-        description: "L'analyse n'a pas pu être complétée. Veuillez réessayer avec une image plus claire."
+        description: "L'analyse n'a pas pu être complétée. Veuillez réessayer avec une image plus claire.",
+        rawResponse: responseText.substring(0, 500) // Pour le débogage
       }, { status: 200 });
     }
   } catch (error) {
