@@ -64,7 +64,7 @@ export default function HistoriqueAnalyses({ user, onClose, onViewAnalyse }: His
         
         const snapshot = await getDocs(testQuery);
         console.log(`Test Firestore réussi: ${snapshot.size} document(s) trouvé(s)`);
-        console.log("Collections disponibles dans Firestore:", db._databaseId.projectId);
+        console.log("Collections disponibles dans Firestore:", db.app.options.projectId);
       } catch (error) {
         console.error("Test Firestore échoué:", error);
       }
