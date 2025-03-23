@@ -51,6 +51,7 @@ export default function MediScan() {
   const [showLoginForm, setShowLoginForm] = useState<boolean>(false);
   const [showPharmaAI, setShowPharmaAI] = useState<boolean>(false);
   const [showAboutPage, setShowAboutPage] = useState<boolean>(false);
+  const [showMobileMenu, setShowMobileMenu] = useState<boolean>(false);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -145,47 +146,83 @@ export default function MediScan() {
       
       console.log("Image téléchargée avec succès:", imageUrl);
       
-      // Simulation d'analyse (à remplacer par votre API réelle)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Résultat simulé
-      const resultat: AnalyseResultat = {
-        nom: "Doliprane 1000mg",
-        description: "Médicament antalgique (anti-douleur) et antipyrétique (anti-fièvre)",
-        image: imageUrl,
-        detailsAnalyse: {
-          nomCommercial: "Doliprane 1000mg",
-          laboratoire: "Sanofi Aventis France",
-          dci: "Paracétamol",
-          formePharmaceutique: "Comprimés pelliculés",
-          dosage: "1000 mg",
-          classeTherapeutique: "Antalgique et antipyrétique. Anilides code ATC : N02BE01",
-          indicationsTherapeutiques: "Traitement symptomatique des douleurs d'intensité légère à modérée et/ou des états fébriles.",
-          posologie: "Adultes: 1 comprimé (1000mg) à renouveler si nécessaire au bout de 4 heures minimum, sans dépasser 3 comprimés par jour.",
-          conservation: "À conserver à température ambiante, à l'abri de l'humidité."
+      // Appel à l'API réelle d'analyse d'image de médicament
+      try {
+        // Indiquer le début de l'analyse
+        toast.loading("Analyse de l'image en cours...");
+        
+        // Préparer les données pour l'API
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        // Appel à l'API d'analyse de médicaments
+        const response = await fetch('/api/analyser-medicament', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Erreur lors de l'analyse du médicament");
         }
-      };
-      
-      setResultat(resultat);
-      setEtape(Etape.RESULTAT);
-      
-      // Sauvegarder automatiquement l'analyse dans Firestore
-      if (auth.currentUser) {
-        try {
-          await saveAnalyse({
-            nom: resultat.nom || "Médicament inconnu",
-            description: resultat.description,
-            image: imageUrl,
-            detailsAnalyse: resultat.detailsAnalyse
-          });
-          console.log("Analyse sauvegardée automatiquement");
-        } catch (saveError) {
-          console.error("Erreur lors de la sauvegarde automatique:", saveError);
-          // Ne pas afficher d'erreur à l'utilisateur car c'est une fonctionnalité secondaire
+        
+        // Récupérer les résultats de l'analyse
+        const analysisResult = await response.json();
+        
+        // Fermer la notification de chargement
+        toast.dismiss();
+        
+        // Créer l'objet résultat à partir des données réelles
+        const resultat: AnalyseResultat = {
+          nom: analysisResult.nom || "Médicament inconnu",
+          description: analysisResult.description || "Aucune description disponible",
+          image: imageUrl,
+          detailsAnalyse: {
+            nomCommercial: analysisResult.nomCommercial || analysisResult.nom || "Non identifié",
+            laboratoire: analysisResult.laboratoire || "Information non disponible",
+            dci: analysisResult.dci || "Information non disponible",
+            formePharmaceutique: analysisResult.formePharmaceutique || "Information non disponible",
+            dosage: analysisResult.dosage || "Information non disponible",
+            classeTherapeutique: analysisResult.classeTherapeutique || "Information non disponible",
+            indicationsTherapeutiques: analysisResult.indicationsTherapeutiques || "Information non disponible",
+            posologie: analysisResult.posologie || "Information non disponible",
+            conservation: analysisResult.conservation || "Information non disponible"
+          }
+        };
+        
+        setResultat(resultat);
+        setEtape(Etape.RESULTAT);
+        
+        // Sauvegarder automatiquement l'analyse dans Firestore
+        if (auth.currentUser) {
+          try {
+            await saveAnalyse({
+              nom: resultat.nom ?? "Médicament inconnu",
+              description: resultat.description,
+              image: imageUrl,
+              detailsAnalyse: resultat.detailsAnalyse
+            });
+            console.log("Analyse sauvegardée automatiquement");
+          } catch (saveError) {
+            console.error("Erreur lors de la sauvegarde automatique:", saveError);
+            // Ne pas afficher d'erreur à l'utilisateur car c'est une fonctionnalité secondaire
+          }
         }
+        
+        return resultat;
+      } catch (apiError) {
+        console.error("Erreur lors de l'appel à l'API d'analyse:", apiError);
+        toast.dismiss();
+        toast.error("Erreur lors de l'analyse: " + (apiError instanceof Error ? apiError.message : "Erreur inconnue"));
+        
+        // En cas d'erreur, afficher une erreur explicite
+        setErreur("Impossible d'analyser ce médicament. Veuillez réessayer avec une image plus claire.");
+        setEtape(Etape.CAPTURE);
+        return { 
+          error: "Erreur d'analyse de l'image" 
+        };
       }
       
-      return resultat;
     } catch (error: any) {
       console.error("Erreur lors de l'analyse:", error);
       
@@ -312,21 +349,35 @@ export default function MediScan() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-4 sm:p-6 lg:p-8" suppressHydrationWarning>
       <div className="min-h-[calc(100vh-4rem)] rounded-3xl border-4 border-[#89CFF0]/30 shadow-xl overflow-hidden bg-white/80 backdrop-filter backdrop-blur-sm" suppressHydrationWarning>
-        <header className="py-4 px-6 backdrop-blur-md bg-white/70 border-b border-[#89CFF0]/20 sticky top-0 z-10 mb-8">
-          <div className="max-w-6xl mx-auto flex justify-between items-center">
+        <header className="py-4 px-4 sm:px-6 backdrop-blur-md bg-white/70 border-b border-[#89CFF0]/20 sticky top-0 z-10 mb-8">
+          <div className="max-w-6xl mx-auto flex flex-wrap justify-between items-center">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 relative">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 relative">
                 <img 
                   src="/images/logo-app.png" 
                   alt="MediScan Logo" 
                   className="w-full h-full object-contain rounded-full"
                 />
               </div>
-              <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#89CFF0] to-[#5AB0E2]">
+              <h1 className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#89CFF0] to-[#5AB0E2]">
                 MediScan
               </h1>
             </div>
-            <div className="flex items-center space-x-3">
+            
+            {/* Menu pour petit écran */}
+            <div className="block sm:hidden">
+              <button 
+                onClick={() => setShowMobileMenu(!showMobileMenu)} 
+                className="p-2 rounded-md bg-blue-50 hover:bg-blue-100 transition-colors"
+              >
+                <svg className="w-6 h-6 text-[#5AB0E2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showMobileMenu ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Menu pour grand écran */}
+            <div className="hidden sm:flex items-center space-x-3">
               {isAuthenticated ? (
                 <>
                   <button
@@ -386,10 +437,97 @@ export default function MediScan() {
                 </button>
               )}
             </div>
+            
+            {/* Menu mobile déroulant */}
+            {showMobileMenu && (
+              <div className="w-full mt-4 sm:hidden">
+                <div className="flex flex-col space-y-2 bg-white/90 p-3 rounded-lg shadow-md border border-[#89CFF0]/20">
+                  {isAuthenticated ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          setShowPharmaAI(true);
+                          setShowMobileMenu(false);
+                        }}
+                        className="w-full px-3 py-2 bg-[#59C3F0]/90 hover:bg-[#59C3F0] text-white rounded-md text-sm transition-all text-left"
+                      >
+                        Pharma AI
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleShowHistorique();
+                          setShowMobileMenu(false);
+                        }}
+                        className="w-full px-3 py-2 bg-[#89CFF0]/90 hover:bg-[#89CFF0] text-white rounded-md text-sm transition-all text-left"
+                      >
+                        Historique
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowAboutPage(true);
+                          setShowMobileMenu(false);
+                        }}
+                        className="w-full px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm transition-all text-left"
+                      >
+                        À propos
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleSignOut();
+                          setShowMobileMenu(false);
+                        }}
+                        className="w-full px-3 py-2 bg-gray-200/70 hover:bg-gray-200 text-gray-700 rounded-md text-sm transition-all text-left"
+                      >
+                        Déconnexion
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          setShowAboutPage(true);
+                          setShowMobileMenu(false);
+                        }}
+                        className="w-full px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm transition-all text-left"
+                      >
+                        À propos
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleShowLoginForm();
+                          setShowMobileMenu(false);
+                        }}
+                        className="w-full px-3 py-2 bg-[#89CFF0]/90 hover:bg-[#89CFF0] text-white rounded-md text-sm transition-all text-left"
+                      >
+                        Connexion
+                      </button>
+                    </>
+                  )}
+                  {etape === Etape.RESULTAT && (
+                    <button
+                      onClick={() => {
+                        handleSaveAnalyse();
+                        setShowMobileMenu(false);
+                      }}
+                      disabled={!isAuthenticated || saveSuccess}
+                      className={`w-full px-3 py-2 text-sm text-left transition-all rounded-md ${
+                        saveSuccess
+                          ? 'bg-green-500 text-white'
+                          : isAuthenticated
+                          ? 'bg-[#89CFF0] hover:bg-[#74B9FF] text-white'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      {saveSuccess ? '✓ Sauvegardé' : 'Sauvegarder'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </header>
 
-        <main className="max-w-6xl mx-auto py-8 px-4 sm:px-6">
+        <main className="max-w-6xl mx-auto py-6 sm:py-8 px-4 sm:px-6">
           <AnimatePresence mode="wait">
             {etape === Etape.ACCUEIL && (
               <motion.div
