@@ -16,6 +16,24 @@ import {
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { toast } from 'react-hot-toast';
 
+// Interface pour les détails du médicament
+export interface DetailsMedicament {
+  nomCommercial: string;
+  laboratoire: string;
+  dci: string;
+  formePharmaceutique: string;
+  dosage: string;
+  classeTherapeutique: string;
+  indicationsTherapeutiques: string;
+  posologie: string;
+  contreIndications: string;
+  effetsSecondaires: string;
+  interactions: string;
+  precautionsEmploi: string;
+  conservation: string;
+  [key: string]: string; // Pour les champs supplémentaires potentiels
+}
+
 // Interface pour le type d'analyse
 export interface AnalyseMedicament {
   id?: string;
@@ -24,7 +42,7 @@ export interface AnalyseMedicament {
   nom: string;
   description?: string;
   image?: string;
-  detailsAnalyse?: any;
+  detailsAnalyse?: DetailsMedicament;
 }
 
 // Collection Firestore pour les analyses

@@ -50,6 +50,10 @@ export async function POST(request: NextRequest) {
         "classeTherapeutique": "catégorie pharmacologique",
         "indicationsTherapeutiques": "pathologies traitées et usages thérapeutiques",
         "posologie": "instructions de prise et dosage recommandé",
+        "contreIndications": "situations où ce médicament ne doit pas être utilisé",
+        "effetsSecondaires": "effets indésirables possibles",
+        "interactions": "interactions avec d'autres médicaments ou substances",
+        "precautionsEmploi": "précautions particulières à prendre",
         "conservation": "conditions de conservation"
       }
       

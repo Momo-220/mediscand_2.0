@@ -29,12 +29,29 @@ enum Etape {
 }
 
 // Définir l'interface AnalyseResultat
+interface DetailsMedicament {
+  nomCommercial: string;
+  laboratoire: string;
+  dci: string;
+  formePharmaceutique: string;
+  dosage: string;
+  classeTherapeutique: string;
+  indicationsTherapeutiques: string;
+  posologie: string;
+  contreIndications: string;
+  effetsSecondaires: string;
+  interactions: string;
+  precautionsEmploi: string;
+  conservation: string;
+  [key: string]: string; // Pour les champs supplémentaires potentiels
+}
+
 interface AnalyseResultat {
   nom?: string;
   description?: string;
   image?: string;
   error?: string;
-  detailsAnalyse?: any;
+  detailsAnalyse?: DetailsMedicament;
 }
 
 export default function MediScan() {
@@ -190,6 +207,10 @@ export default function MediScan() {
             classeTherapeutique: analysisResult.classeTherapeutique || "Information non disponible",
             indicationsTherapeutiques: analysisResult.indicationsTherapeutiques || "Information non disponible",
             posologie: analysisResult.posologie || "Information non disponible",
+            contreIndications: analysisResult.contreIndications || "Information non disponible",
+            effetsSecondaires: analysisResult.effetsSecondaires || "Information non disponible",
+            interactions: analysisResult.interactions || "Information non disponible",
+            precautionsEmploi: analysisResult.precautionsEmploi || "Information non disponible",
             conservation: analysisResult.conservation || "Information non disponible"
           }
         };
