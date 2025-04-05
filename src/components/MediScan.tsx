@@ -17,6 +17,7 @@ import LoginForm from './LoginForm';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import PharmaAI from './PharmaAI';
 import AboutPage from './AboutPage';
+import SplashScreen from './SplashScreen';
 
 enum Etape {
   ACCUEIL = 'ACCUEIL',
@@ -52,6 +53,7 @@ export default function MediScan() {
   const [showPharmaAI, setShowPharmaAI] = useState<boolean>(false);
   const [showAboutPage, setShowAboutPage] = useState<boolean>(false);
   const [showMobileMenu, setShowMobileMenu] = useState<boolean>(false);
+  const [showSplashScreen, setShowSplashScreen] = useState<boolean>(true);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -120,7 +122,15 @@ export default function MediScan() {
       // Vérifier que l'utilisateur est authentifié
       if (!auth.currentUser) {
         toast.error("Veuillez vous connecter pour analyser une image");
-        setEtape(Etape.CAPTURE);
+        setEtape(Etape.ACCUEIL);
+        // Stocker temporairement l'image pour l'analyse après connexion
+        const tempImageData = typeof fileOrBase64 === 'string' ? fileOrBase64 : null;
+        if (tempImageData) {
+          setImageData(tempImageData);
+        }
+        // Ouvrir le formulaire de connexion
+        setShowLoginForm(true);
+        
         return { error: "Utilisateur non authentifié" };
       }
 
@@ -342,6 +352,10 @@ export default function MediScan() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-4 sm:p-6 lg:p-8" suppressHydrationWarning>
+      {showSplashScreen && (
+        <SplashScreen onComplete={() => setShowSplashScreen(false)} />
+      )}
+      
       <div className="min-h-[calc(100vh-4rem)] rounded-3xl border-4 border-[#89CFF0]/30 shadow-xl overflow-hidden bg-white/80 backdrop-filter backdrop-blur-sm" suppressHydrationWarning>
         <header className="py-4 px-4 sm:px-6 backdrop-blur-md bg-white/70 border-b border-[#89CFF0]/20 sticky top-0 z-10 mb-8">
           <div className="max-w-6xl mx-auto flex flex-wrap justify-between items-center">
@@ -697,6 +711,7 @@ export default function MediScan() {
           </AnimatePresence>
         </main>
       </div>
+      
       <Toaster position="top-center" />
 
       {/* Ajouter le composant d'historique */}
@@ -715,6 +730,13 @@ export default function MediScan() {
           onLoginSuccess={() => {
             setShowLoginForm(false);
             toast.success('Vous êtes connecté');
+            
+            // Si une image est en attente d'analyse, reprendre l'analyse
+            if (imageData) {
+              setTimeout(() => {
+                analyserImage(imageData);
+              }, 1000); // Délai court pour laisser le toast de connexion s'afficher
+            }
           }} 
         />
       )}

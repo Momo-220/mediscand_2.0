@@ -153,37 +153,31 @@ export default function Camera({ onPhotoCapture, onClose }: CameraProps) {
         <canvas ref={canvasRef} className="hidden" />
       </div>
       
-      {/* Contrôles de la caméra - Bouton similaire à l'image partagée */}
+      {/* Contrôles de la caméra - Bouton modernisé */}
       <div className="pb-safe-bottom pt-4 px-4 flex justify-center items-center bg-gradient-to-t from-black/80 to-transparent">
         {isStreaming && (
           <motion.button
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            whileTap={{ scale: 0.9 }}
+            whileTap={{ scale: 0.85 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
             onClick={capturePhoto}
-            className="w-16 h-16 rounded-full bg-blue-500 shadow-lg flex items-center justify-center"
+            className="relative w-20 h-20 rounded-full bg-white/10 backdrop-blur-md shadow-xl flex items-center justify-center"
             aria-label="Prendre une photo"
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="h-8 w-8 text-white" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={1.5} 
-                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" 
-              />
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={1.5} 
-                d="M12 13a2 2 0 100-4 2 2 0 000 4z" 
-              />
-            </svg>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#3b82f6] to-[#60a5fa] rounded-full opacity-80"></div>
+            <div className="absolute inset-2 bg-white rounded-full"></div>
+            <div className="absolute inset-3 bg-[#89CFF0] rounded-full flex items-center justify-center">
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                className="h-8 w-8 text-white" 
+                viewBox="0 0 24 24" 
+                fill="currentColor"
+              >
+                <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" />
+                <path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h4.05l1.83-2h4.24l1.83 2H20v12z" />
+              </svg>
+            </div>
           </motion.button>
         )}
       </div>
