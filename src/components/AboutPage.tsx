@@ -170,7 +170,7 @@ export default function AboutPage({ onClose }: AboutPageProps) {
                 Vous avez des questions, des suggestions ou des commentaires ? 
                 N'hésitez pas à nous contacter à l'adresse : 
                 <a href="mailto:personnelmomo@gmail.com" className="text-[#89CFF0] hover:underline ml-1">
-                  personnelmomo@gmail.com
+                  personnelmomo1@gmail.com
                 </a>
               </p>
             </section>
