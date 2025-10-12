@@ -70,10 +70,18 @@ export class AuthService {
    */
   static async signInWithGoogle() {
     try {
+      // Détecter l'URL de base (production ou local)
+      const baseUrl = typeof window !== 'undefined' 
+        ? window.location.origin 
+        : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      
+      console.log('🔗 URL de redirection OAuth:', baseUrl)
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: baseUrl,
+          skipBrowserRedirect: false
         }
       })
 
