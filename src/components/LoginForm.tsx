@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { loginUser, registerUser, resetPassword, signInWithGoogle } from '../firebase/userService';
 import { toast } from 'react-hot-toast';
+import { AuthService } from '../supabase';
 import Image from 'next/image';
 
 interface LoginFormProps {
@@ -21,27 +21,48 @@ export default function LoginForm({ onClose, onLoginSuccess }: LoginFormProps) {
     e.preventDefault();
     
     if (!email || !password) {
-      toast.error('Veuillez remplir tous les champs.');
+      toast.error('📝 Veuillez remplir tous les champs', {
+        duration: 2000,
+        style: {
+          background: '#FEF3C7',
+          color: '#92400E',
+          fontWeight: '500',
+        }
+      });
       return;
     }
     
     try {
       setIsLoading(true);
-      await loginUser(email, password);
-      toast.success('Connexion réussie !');
+      await AuthService.signIn({ email, password });
+      toast.success('🎉 Bienvenue !', {
+        duration: 2000,
+        style: {
+          background: '#D1FAE5',
+          color: '#065F46',
+          fontWeight: '500',
+        }
+      });
       onLoginSuccess();
       onClose();
     } catch (error: any) {
       console.error('Erreur de connexion:', error);
-      let errorMessage = 'Erreur lors de la connexion.';
+      let errorMessage = '❌ Impossible de se connecter';
       
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-        errorMessage = 'Email ou mot de passe incorrect.';
-      } else if (error.code === 'auth/too-many-requests') {
-        errorMessage = 'Trop de tentatives échouées. Veuillez réessayer plus tard.';
+      if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = '🔐 Email ou mot de passe incorrect';
+      } else if (error.message?.includes('Too many requests')) {
+        errorMessage = '⏱️ Trop de tentatives. Réessayez dans quelques minutes';
       }
       
-      toast.error(errorMessage);
+      toast.error(errorMessage, {
+        duration: 3000,
+        style: {
+          background: '#FEE2E2',
+          color: '#991B1B',
+          fontWeight: '500',
+        }
+      });
     } finally {
       setIsLoading(false);
     }
@@ -62,21 +83,35 @@ export default function LoginForm({ onClose, onLoginSuccess }: LoginFormProps) {
     
     try {
       setIsLoading(true);
-      await registerUser(email, password);
-      toast.success('Compte créé avec succès !');
+      await AuthService.signUp({ email, password });
+      toast.success('✅ Compte créé ! Vérifiez votre email', {
+        duration: 4000,
+        style: {
+          background: '#D1FAE5',
+          color: '#065F46',
+          fontWeight: '500',
+        }
+      });
       onLoginSuccess();
       onClose();
     } catch (error: any) {
       console.error('Erreur d\'inscription:', error);
-      let errorMessage = 'Erreur lors de la création du compte.';
+      let errorMessage = '❌ Impossible de créer le compte';
       
-      if (error.code === 'auth/email-already-in-use') {
-        errorMessage = 'Cet email est déjà utilisé par un autre compte.';
-      } else if (error.code === 'auth/invalid-email') {
-        errorMessage = 'Format d\'email invalide.';
+      if (error.message?.includes('User already registered')) {
+        errorMessage = '📧 Cet email est déjà utilisé';
+      } else if (error.message?.includes('Invalid email')) {
+        errorMessage = '📧 Format d\'email invalide';
       }
       
-      toast.error(errorMessage);
+      toast.error(errorMessage, {
+        duration: 3000,
+        style: {
+          background: '#FEE2E2',
+          color: '#991B1B',
+          fontWeight: '500',
+        }
+      });
     } finally {
       setIsLoading(false);
     }
@@ -85,10 +120,9 @@ export default function LoginForm({ onClose, onLoginSuccess }: LoginFormProps) {
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
-      await signInWithGoogle();
-      toast.success('Connexion réussie !');
-      onLoginSuccess();
-      onClose();
+      await AuthService.signInWithGoogle();
+      // Note: La redirection OAuth se fera automatiquement
+      // Le callback sera géré par Supabase
     } catch (error) {
       console.error('Erreur de connexion avec Google:', error);
       toast.error('Erreur lors de la connexion avec Google.');
@@ -105,19 +139,33 @@ export default function LoginForm({ onClose, onLoginSuccess }: LoginFormProps) {
     
     try {
       setIsLoading(true);
-      await resetPassword(email);
-      toast.success('Email de réinitialisation envoyé. Vérifiez votre boîte de réception.');
+      await AuthService.resetPassword(email);
+      toast.success('📧 Email envoyé ! Vérifiez votre boîte de réception', {
+        duration: 4000,
+        style: {
+          background: '#D1FAE5',
+          color: '#065F46',
+          fontWeight: '500',
+        }
+      });
     } catch (error: any) {
       console.error('Erreur de réinitialisation:', error);
-      let errorMessage = 'Erreur lors de l\'envoi de l\'email de réinitialisation.';
+      let errorMessage = '❌ Impossible d\'envoyer l\'email';
       
-      if (error.code === 'auth/user-not-found') {
-        errorMessage = 'Aucun compte n\'est associé à cet email.';
-      } else if (error.code === 'auth/invalid-email') {
-        errorMessage = 'Format d\'email invalide.';
+      if (error.message?.includes('User not found')) {
+        errorMessage = '📧 Aucun compte avec cet email';
+      } else if (error.message?.includes('Invalid email')) {
+        errorMessage = '📧 Format d\'email invalide';
       }
       
-      toast.error(errorMessage);
+      toast.error(errorMessage, {
+        duration: 3000,
+        style: {
+          background: '#FEE2E2',
+          color: '#991B1B',
+          fontWeight: '500',
+        }
+      });
     } finally {
       setIsLoading(false);
     }

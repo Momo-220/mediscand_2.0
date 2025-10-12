@@ -31,7 +31,7 @@ Règles importantes:
 
 // Configurer le modèle Gemini pour le chat
 const modelConfig = {
-  model: 'gemini-1.5-pro',
+  model: 'gemini-2.0-flash-exp',
   generationConfig: {
     temperature: 0.7,
     topP: 0.9,
@@ -177,14 +177,15 @@ export async function analyserImageMedicament(imageBase64: string): Promise<stri
 
     console.log("✅ Image validée, initialisation du modèle Gemini...");
 
-    // Initialiser le modèle avec des configurations appropriées
+    // Initialiser le modèle avec des configurations optimisées pour la vitesse
+    // Utilisation de Gemini 2.0 Flash (dernière version disponible)
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-pro",
+      model: "gemini-2.0-flash-exp",
       generationConfig: {
-        temperature: 0.2,
-        topK: 32,
-        topP: 0.95,
-        maxOutputTokens: 1500,
+        temperature: 0.1, // Plus déterministe = plus rapide
+        topK: 16, // Réduit pour plus de vitesse
+        topP: 0.8, // Réduit pour plus de vitesse
+        maxOutputTokens: 1000, // Réduit pour plus de vitesse
       }
     });
 
@@ -223,10 +224,17 @@ Réponds uniquement en français et assure-toi que TOUTES les informations sont 
     console.log("🚀 Envoi de la requête à l'API Gemini...");
 
     try {
-      const result = await model.generateContent([
+      // Ajouter un timeout pour éviter les blocages
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout: L\'API Gemini prend trop de temps à répondre')), 30000); // 30 secondes max
+      });
+
+      const generatePromise = model.generateContent([
         { text: prompt },
         imagePart
       ]);
+
+      const result = await Promise.race([generatePromise, timeoutPromise]) as any;
 
       console.log("📥 Réponse reçue de l'API Gemini");
 

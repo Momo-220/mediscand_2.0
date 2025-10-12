@@ -287,9 +287,9 @@ Nous prenons la protection de vos données très au sérieux :
 - **React Hot Toast** : Pour des notifications élégantes
 
 #### Services Backend
-- **Firebase** :
+- **Supabase** :
   - Authentication : Gestion sécurisée des utilisateurs
-  - Firestore : Base de données pour stocker les analyses
+  - PostgreSQL : Base de données pour stocker les analyses
   - Storage : Stockage sécurisé des images
 - **Google Gemini AI** : Intelligence artificielle pour l'analyse des médicaments
 - **API Routes Next.js** : Pour le traitement des requêtes
@@ -306,7 +306,7 @@ mediscan/
 │   │   ├── MediScan.tsx    # Composant principal
 │   │   ├── PharmaAI.tsx    # Assistant IA
 │   │   └── ...
-│   ├── firebase/          # Configuration Firebase
+│   ├── supabase/          # Configuration Supabase
 │   └── lib/              # Utilitaires
 └── public/               # Ressources statiques
 ```
@@ -319,7 +319,7 @@ mediscan/
    - Extraction d'informations textuelles
 
 2. **Gestion des Données** :
-   - Stockage sécurisé dans Firestore
+   - Stockage sécurisé dans PostgreSQL (Supabase)
    - Gestion des sessions utilisateur
    - Historique des analyses
    - Sauvegarde automatique
@@ -328,7 +328,7 @@ mediscan/
    - Authentification sécurisée
    - Protection des données utilisateur
    - Chiffrement des communications
-   - Règles de sécurité Firebase
+   - Règles de sécurité Supabase
 
 4. **Interface Responsive** :
    - Adaptation automatique à tous les écrans

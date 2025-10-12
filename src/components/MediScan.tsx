@@ -8,16 +8,13 @@ import ResultatAnalyse from './ResultatAnalyse';
 import HowItWorksSection from './HowItWorksSection';
 import Image from 'next/image';
 import { Toaster, toast } from 'react-hot-toast';
-import { auth, storage } from '../firebase/config';
-import { onAuthChange, signOut } from '../firebase/userService';
-import { saveAnalyse, AnalyseMedicament } from '../firebase/analysesService';
-import { User } from 'firebase/auth';
 import HistoriqueAnalyses from './HistoriqueAnalyses';
 import LoginForm from './LoginForm';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import PharmaAI from './PharmaAI';
 import AboutPage from './AboutPage';
 import SplashScreen from './SplashScreen';
+import { AuthService, AnalysesService, StorageService, SupabaseAnalyse } from '../supabase';
+import type { User } from '@supabase/supabase-js';
 
 enum Etape {
   ACCUEIL = 'ACCUEIL',
@@ -65,7 +62,7 @@ export default function MediScan() {
   const [user, setUser] = useState<User | null>(null);
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
   const [showHistorique, setShowHistorique] = useState<boolean>(false);
-  const [selectedAnalyse, setSelectedAnalyse] = useState<AnalyseMedicament | null>(null);
+  const [selectedAnalyse, setSelectedAnalyse] = useState<SupabaseAnalyse | null>(null);
   const [showLoginForm, setShowLoginForm] = useState<boolean>(false);
   const [showPharmaAI, setShowPharmaAI] = useState<boolean>(false);
   const [showAboutPage, setShowAboutPage] = useState<boolean>(false);
@@ -136,19 +133,26 @@ export default function MediScan() {
   const analyserImage = async (fileOrBase64: File | string): Promise<AnalyseResultat> => {
     setEtape(Etape.ANALYSE);
     try {
-      // Vérifier que l'utilisateur est authentifié
-      if (!auth.currentUser) {
-        toast.error("Veuillez vous connecter pour analyser une image");
-        setEtape(Etape.ACCUEIL);
-        // Stocker temporairement l'image pour l'analyse après connexion
-        const tempImageData = typeof fileOrBase64 === 'string' ? fileOrBase64 : null;
-        if (tempImageData) {
-          setImageData(tempImageData);
+      // Vérifier que l'utilisateur est authentifié avec Supabase
+      if (!user) {
+      toast.error("🔐 Connectez-vous pour analyser vos médicaments", {
+        duration: 4000,
+        style: {
+          background: '#FEE2E2',
+          color: '#991B1B',
+          fontWeight: '500',
         }
-        // Ouvrir le formulaire de connexion
-        setShowLoginForm(true);
-        
-        return { error: "Utilisateur non authentifié" };
+      });
+      setEtape(Etape.ACCUEIL);
+      // Stocker temporairement l'image pour l'analyse après connexion
+      const tempImageData = typeof fileOrBase64 === 'string' ? fileOrBase64 : null;
+      if (tempImageData) {
+        setImageData(tempImageData);
+      }
+      // Ouvrir le formulaire de connexion
+      setShowLoginForm(true);
+      
+      return { error: "Veuillez vous connecter" };
       }
 
       // Gérer à la fois les fichiers et les chaînes base64
@@ -162,14 +166,24 @@ export default function MediScan() {
         file = fileOrBase64;
       }
 
-      const userId = auth.currentUser.uid;
-      const timestamp = Date.now();
-      const fileName = `${timestamp}-${file.name}`;
-      const storageRef = ref(storage, `images/${userId}/${fileName}`);
-      
-      // Upload de l'image vers Firebase Storage
-      await uploadBytes(storageRef, file);
-      const imageUrl = await getDownloadURL(storageRef);
+      // Upload vers Supabase Storage
+      let imageUrl: string;
+      try {
+        imageUrl = await StorageService.uploadMedicamentImage(file);
+        console.log("Image uploadée vers Supabase Storage:", imageUrl);
+      } catch (uploadError) {
+        console.error("Erreur lors de l'upload:", uploadError);
+        // Fallback vers URL locale si l'upload échoue
+        imageUrl = URL.createObjectURL(file);
+        toast.error("📸 L'image sera analysée mais pas sauvegardée en ligne", {
+          duration: 3000,
+          style: {
+            background: '#FEF3C7',
+            color: '#92400E',
+            fontWeight: '500',
+          }
+        });
+      }
       
       console.log("Image téléchargée avec succès:", imageUrl);
       
@@ -218,19 +232,34 @@ export default function MediScan() {
         setResultat(resultat);
         setEtape(Etape.RESULTAT);
         
-        // Sauvegarder automatiquement l'analyse dans Firestore
-        if (auth.currentUser) {
+        // Sauvegarder automatiquement l'analyse dans Supabase
+        if (user) {
           try {
-            await saveAnalyse({
+            await AnalysesService.saveAnalyse({
               nom: resultat.nom ?? "Médicament inconnu",
               description: resultat.description,
-              image: imageUrl,
-              detailsAnalyse: resultat.detailsAnalyse
+              image_url: imageUrl,
+              details_analyse: resultat.detailsAnalyse
             });
-            console.log("Analyse sauvegardée automatiquement");
+            console.log("Analyse sauvegardée automatiquement dans Supabase");
+            toast.success("✅ Analyse sauvegardée dans votre historique", {
+              duration: 2000,
+              style: {
+                background: '#D1FAE5',
+                color: '#065F46',
+                fontWeight: '500',
+              }
+            });
           } catch (saveError) {
             console.error("Erreur lors de la sauvegarde automatique:", saveError);
-            // Ne pas afficher d'erreur à l'utilisateur car c'est une fonctionnalité secondaire
+            toast.error("⚠️ L'analyse n'a pas pu être sauvegardée", {
+              duration: 3000,
+              style: {
+                background: '#FEF3C7',
+                color: '#92400E',
+                fontWeight: '500',
+              }
+            });
           }
         }
         
@@ -278,40 +307,68 @@ export default function MediScan() {
     }
   }, []);
 
+  // Gérer l'authentification avec Supabase
   useEffect(() => {
-    const unsubscribe = onAuthChange((currentUser) => {
+    const { data: { subscription } } = AuthService.onAuthStateChange((currentUser, session) => {
       setIsAuthenticated(!!currentUser);
       setUser(currentUser);
     });
     
-    return () => unsubscribe();
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleSaveAnalyse = async () => {
     if (!isAuthenticated || !user) {
-      toast.error("Veuillez vous connecter pour sauvegarder l'analyse.");
+      toast.error("🔐 Connectez-vous pour sauvegarder vos analyses", {
+        duration: 3000,
+        style: {
+          background: '#FEE2E2',
+          color: '#991B1B',
+          fontWeight: '500',
+        }
+      });
       return;
     }
 
     if (!resultat || etape !== Etape.RESULTAT) {
-      toast.error("Aucune analyse à sauvegarder.");
+      toast.error("⚠️ Aucune analyse à sauvegarder", {
+        duration: 2000,
+        style: {
+          background: '#FEF3C7',
+          color: '#92400E',
+          fontWeight: '500',
+        }
+      });
       return;
     }
 
     try {
-      toast.loading("Sauvegarde en cours...");
+      toast.loading("💾 Sauvegarde en cours...", {
+        style: {
+          background: '#DBEAFE',
+          color: '#1E40AF',
+          fontWeight: '500',
+        }
+      });
       
-      // Adapter les données au nouveau format d'AnalyseMedicament
+      // Adapter les données au nouveau format Supabase
       const analyseData = {
         nom: resultat.nom || 'Inconnu',
         description: resultat.description || '',
-        image: imageData || undefined,
-        detailsAnalyse: resultat.detailsAnalyse || {}
+        image_url: imageData || undefined,
+        details_analyse: resultat.detailsAnalyse || {}
       };
 
-      await saveAnalyse(analyseData);
+      await AnalysesService.saveAnalyse(analyseData);
       toast.dismiss();
-      toast.success("Analyse sauvegardée avec succès!");
+      toast.success("✅ Analyse sauvegardée avec succès !", {
+        duration: 3000,
+        style: {
+          background: '#D1FAE5',
+          color: '#065F46',
+          fontWeight: '500',
+        }
+      });
       setSaveSuccess(true);
       
       setTimeout(() => {
@@ -319,7 +376,14 @@ export default function MediScan() {
       }, 3000);
     } catch (error) {
       toast.dismiss();
-      toast.error("Erreur lors de la sauvegarde de l'analyse.");
+      toast.error("❌ Impossible de sauvegarder l'analyse", {
+        duration: 3000,
+        style: {
+          background: '#FEE2E2',
+          color: '#991B1B',
+          fontWeight: '500',
+        }
+      });
       console.error("Erreur lors de la sauvegarde:", error);
     }
   };
@@ -335,7 +399,7 @@ export default function MediScan() {
   };
 
   // Gérer l'affichage d'une analyse de l'historique
-  const handleViewAnalyse = (analyse: AnalyseMedicament) => {
+  const handleViewAnalyse = (analyse: any) => {
     // Créer un objet résultat à partir de l'analyse sauvegardée
     setResultat({
       nom: analyse.nom,
@@ -363,21 +427,35 @@ export default function MediScan() {
   // Gérer la déconnexion
   const handleSignOut = async () => {
     try {
-      await signOut();
-      toast.success('Vous êtes déconnecté');
+      await AuthService.signOut();
+      toast.success('👋 À bientôt !', {
+        duration: 2000,
+        style: {
+          background: '#D1FAE5',
+          color: '#065F46',
+          fontWeight: '500',
+        }
+      });
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);
-      toast.error('Erreur lors de la déconnexion');
+      toast.error('❌ Impossible de se déconnecter', {
+        duration: 3000,
+        style: {
+          background: '#FEE2E2',
+          color: '#991B1B',
+          fontWeight: '500',
+        }
+      });
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-4 sm:p-6 lg:p-8" suppressHydrationWarning>
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-cyan-50 to-blue-50 p-4 sm:p-6 lg:p-8" suppressHydrationWarning>
       {showSplashScreen && (
         <SplashScreen onComplete={() => setShowSplashScreen(false)} />
       )}
       
-      <div className="min-h-[calc(100vh-4rem)] rounded-3xl border-4 border-[#89CFF0]/30 shadow-xl overflow-hidden bg-white/80 backdrop-filter backdrop-blur-sm" suppressHydrationWarning>
+      <div className="min-h-[calc(100vh-4rem)] rounded-3xl border-4 border-white/40 shadow-2xl overflow-hidden bg-white/90 backdrop-filter backdrop-blur-xl" suppressHydrationWarning>
         <header className="py-4 px-4 sm:px-6 backdrop-blur-md bg-white/70 border-b border-[#89CFF0]/20 sticky top-0 z-10 mb-8">
           <div className="max-w-6xl mx-auto flex flex-wrap justify-between items-center">
             <div className="flex items-center gap-3">

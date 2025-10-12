@@ -2,21 +2,17 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getUserAnalyses, deleteAnalyse, AnalyseMedicament, getRecentAnalyses } from '../firebase/analysesService';
-import { User } from 'firebase/auth';
 import Image from 'next/image';
+import { AnalysesService, SupabaseAnalyse } from '../supabase';
+import type { User } from '@supabase/supabase-js';
 import { Toaster, toast } from 'react-hot-toast';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { auth } from '../firebase/config';
-import { onAuthStateChanged } from 'firebase/auth';
-import { collection, query, limit, getDocs } from 'firebase/firestore';
-import { db } from '../firebase/config';
 
 interface HistoriqueAnalysesProps {
   user: User | null;
   onClose: () => void;
-  onViewAnalyse: (analyse: AnalyseMedicament) => void;
+  onViewAnalyse: (analyse: SupabaseAnalyse) => void;
 }
 
 const formatDate = (date: Date): string => {
@@ -30,26 +26,25 @@ const formatDate = (date: Date): string => {
 };
 
 export default function HistoriqueAnalyses({ user, onClose, onViewAnalyse }: HistoriqueAnalysesProps) {
-  const [analyses, setAnalyses] = useState<AnalyseMedicament[]>([]);
+  const [analyses, setAnalyses] = useState<SupabaseAnalyse[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Gérer l'authentification avec Supabase
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsAuthenticated(!!user);
-      if (user) {
-        loadAnalyses();
-      } else {
-        setAnalyses([]);
-        setLoading(false);
-      }
-    });
+    setIsAuthenticated(!!user);
+    if (user) {
+      loadAnalyses();
+    } else {
+      setAnalyses([]);
+      setLoading(false);
+    }
+  }, [user]);
 
-    return () => unsubscribe();
-  }, []);
-
+  // TODO: Tester la connexion à Supabase
+  /*
   useEffect(() => {
     // Tester la connexion à Firestore
     const testFirestore = async () => {
@@ -72,13 +67,16 @@ export default function HistoriqueAnalyses({ user, onClose, onViewAnalyse }: His
     
     testFirestore();
   }, [isAuthenticated]);
+  */
 
   const loadAnalyses = async () => {
+    if (!user) return;
+    
     try {
       setLoading(true);
       setError(null);
       
-      const userAnalyses = await getRecentAnalyses(10);
+      const userAnalyses = await AnalysesService.getRecentAnalyses(10);
       
       if (userAnalyses.length === 0) {
         console.log("Aucune analyse trouvée dans l'historique");
@@ -100,7 +98,7 @@ export default function HistoriqueAnalyses({ user, onClose, onViewAnalyse }: His
 
     try {
       toast.loading("Suppression en cours...");
-      await deleteAnalyse(analyseId);
+      await AnalysesService.deleteAnalyse(analyseId);
       
       // Mettre à jour la liste sans recharger toutes les analyses
       setAnalyses(analyses.filter(a => a.id !== analyseId));
@@ -245,9 +243,9 @@ export default function HistoriqueAnalyses({ user, onClose, onViewAnalyse }: His
                       className="bg-gray-800 rounded-xl overflow-hidden border border-gray-700 hover:border-blue-700/50 hover:shadow-lg hover:shadow-blue-900/20 transition-all group"
                     >
                       <div className="relative h-40 w-full bg-gray-900">
-                        {analyse.image ? (
+                        {analyse.image_url ? (
                           <img
-                            src={analyse.image}
+                            src={analyse.image_url}
                             alt={analyse.nom}
                             className="w-full h-full object-cover brightness-90 group-hover:brightness-100 transition-all"
                           />

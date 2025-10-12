@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User } from 'firebase/auth';
 import FormattedMessage from './FormattedMessage';
+import type { User } from '@supabase/supabase-js';
 import { sendMessage, cancelGeneration, initChat } from '../lib/gemini';
 import { toast } from 'react-hot-toast';
 
@@ -130,9 +130,9 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
         isStreaming: true
       }]);
 
-      // Appeler l'API Gemini
+      // Appeler l'API Gemini 2.0 Flash
       const response = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=" + process.env.NEXT_PUBLIC_GEMINI_API_KEY,
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=" + process.env.NEXT_PUBLIC_GEMINI_API_KEY,
         {
           method: "POST",
           headers: {

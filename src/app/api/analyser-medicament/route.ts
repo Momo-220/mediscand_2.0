@@ -2,10 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Configurer l'API Gemini
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "");
+const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
+const genAI = new GoogleGenerativeAI(apiKey);
 
 export async function POST(request: NextRequest) {
   try {
+    // Vérifier si la clé API est configurée
+    if (!apiKey) {
+      console.error("❌ Clé API Gemini manquante");
+      return NextResponse.json({
+        success: false,
+        message: "Configuration manquante : Clé API Gemini non trouvée",
+        nom: "Erreur de configuration",
+        description: "Veuillez configurer la clé API Gemini dans les variables d'environnement."
+      }, { status: 500 });
+    }
     // Vérification de la méthode
     if (request.method !== "POST") {
       return NextResponse.json({
@@ -29,9 +40,9 @@ export async function POST(request: NextRequest) {
     const imageBytes = await imageFile.arrayBuffer();
     const base64Image = Buffer.from(imageBytes).toString("base64");
 
-    // Utiliser le modèle Gemini 2.0 Flash pour une meilleure performance
+    // Utiliser le modèle Gemini 2.0 Flash (dernière version pour l'analyse d'images)
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.0-flash-exp",
     });
 
     // Définir le prompt pour l'analyse de médicaments, optimisé pour Gemini 2.0 Flash
@@ -103,14 +114,33 @@ export async function POST(request: NextRequest) {
         rawResponse: responseText.substring(0, 500) // Pour le débogage
       }, { status: 200 });
     }
-  } catch (error) {
-    console.error("Erreur lors de l'analyse du médicament:", error);
+  } catch (error: any) {
+    console.error("❌ Erreur lors de l'analyse du médicament:", error);
+    
+    // Gestion spécifique des erreurs d'API Gemini
+    let errorMessage = "Une erreur est survenue lors de l'analyse.";
+    let statusCode = 500;
+    
+    if (error.message?.includes("API key")) {
+      errorMessage = "Clé API invalide ou expirée.";
+      statusCode = 401;
+    } else if (error.message?.includes("quota")) {
+      errorMessage = "Quota d'API dépassé. Veuillez réessayer plus tard.";
+      statusCode = 429;
+    } else if (error.message?.includes("SAFETY")) {
+      errorMessage = "Contenu bloqué pour des raisons de sécurité.";
+      statusCode = 400;
+    } else if (error.code === "ENOTFOUND") {
+      errorMessage = "Problème de connexion réseau.";
+      statusCode = 503;
+    }
     
     return NextResponse.json({
       success: false,
-      message: "Erreur lors de l'analyse du médicament",
+      message: errorMessage,
       nom: "Erreur d'analyse",
-      description: "Une erreur est survenue lors de l'analyse. Veuillez réessayer."
-    }, { status: 500 });
+      description: errorMessage + " Veuillez réessayer.",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    }, { status: statusCode });
   }
 } 

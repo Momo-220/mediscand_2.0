@@ -10,9 +10,9 @@ html {
 }
 
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 10, 15, 30;
-  --background-end-rgb: 5, 10, 20;
+  --foreground-rgb: 30, 41, 59;
+  --background-start-rgb: 219, 234, 254;
+  --background-end-rgb: 186, 230, 253;
   --primary-color: 137, 207, 240; /* Baby blue */
   --primary-light: 179, 228, 255;
   --accent-color: 116, 185, 255;
