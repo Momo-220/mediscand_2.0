@@ -284,12 +284,3 @@ export class AnalysesService {
 
 // Export par défaut
 export default AnalysesService
-
-// Export des fonctions individuelles pour la compatibilité
-export const saveAnalyse = AnalysesService.saveAnalyse
-export const getRecentAnalyses = AnalysesService.getRecentAnalyses
-export const getUserAnalyses = AnalysesService.getUserAnalyses
-export const getAnalyseById = AnalysesService.getAnalyseById
-export const updateAnalyse = AnalysesService.updateAnalyse
-export const deleteAnalyse = AnalysesService.deleteAnalyse
-export const getAnalysesCount = AnalysesService.getAnalysesCount

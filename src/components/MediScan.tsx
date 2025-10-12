@@ -404,7 +404,7 @@ export default function MediScan() {
     setResultat({
       nom: analyse.nom,
       description: analyse.description || '',
-      image: analyse.image,
+      image: analyse.image_url,
       error: false,
       detailsAnalyse: analyse.detailsAnalyse || {}
     });

@@ -245,12 +245,3 @@ export class StorageService {
 
 // Export par défaut
 export default StorageService
-
-// Export des fonctions individuelles pour la compatibilité
-export const uploadFile = StorageService.uploadFile
-export const uploadMedicamentImage = StorageService.uploadMedicamentImage
-export const deleteFile = StorageService.deleteFile
-export const getPublicUrl = StorageService.getPublicUrl
-export const listUserFiles = StorageService.listUserFiles
-export const getFileInfo = StorageService.getFileInfo
-export const downloadFile = StorageService.downloadFile

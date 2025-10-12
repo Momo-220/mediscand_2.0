@@ -7,35 +7,5 @@ export { default as AuthService } from './authService'
 export { default as AnalysesService } from './analysesService'
 export { default as StorageService } from './storageService'
 
-// Export des fonctions individuelles pour faciliter l'utilisation
-export {
-  signUp,
-  signIn,
-  signInWithGoogle,
-  signOut,
-  resetPassword,
-  getCurrentUser,
-  getCurrentSession,
-  onAuthStateChange,
-  isAuthenticated
-} from './authService'
-
-export {
-  saveAnalyse,
-  getRecentAnalyses,
-  getUserAnalyses,
-  getAnalyseById,
-  updateAnalyse,
-  deleteAnalyse,
-  getAnalysesCount
-} from './analysesService'
-
-export {
-  uploadFile,
-  uploadMedicamentImage,
-  deleteFile,
-  getPublicUrl,
-  listUserFiles,
-  getFileInfo,
-  downloadFile
-} from './storageService'
+// Les fonctions sont accessibles via les services (AuthService, AnalysesService, StorageService)
+// Pas besoin d'exporter les fonctions individuelles car elles sont des méthodes statiques
