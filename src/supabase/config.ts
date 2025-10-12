@@ -33,6 +33,7 @@ export interface AnalyseMedicament {
   description?: string
   image_url?: string
   details_analyse?: any
+  detailsAnalyse?: any  // Alias pour compatibilité
   created_at: string
   updated_at: string
 }

@@ -103,7 +103,11 @@ export class AnalysesService {
         throw error
       }
 
-      return data || []
+      // Mapper details_analyse vers detailsAnalyse pour compatibilité
+      return (data || []).map(analyse => ({
+        ...analyse,
+        detailsAnalyse: analyse.details_analyse
+      }))
     } catch (error: any) {
       console.error('Erreur lors de la récupération des analyses:', error)
       return []
@@ -137,7 +141,11 @@ export class AnalysesService {
         throw error
       }
 
-      return data || []
+      // Mapper details_analyse vers detailsAnalyse pour compatibilité
+      return (data || []).map(analyse => ({
+        ...analyse,
+        detailsAnalyse: analyse.details_analyse
+      }))
     } catch (error: any) {
       console.error('Erreur lors de la récupération des analyses:', error)
       throw error
