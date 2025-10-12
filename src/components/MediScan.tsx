@@ -309,6 +309,30 @@ export default function MediScan() {
 
   // Gérer l'authentification avec Supabase
   useEffect(() => {
+    // Gérer les tokens OAuth dans l'URL (après connexion Google)
+    const handleOAuthCallback = async () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      
+      if (accessToken && refreshToken) {
+        console.log('🔐 Tokens OAuth détectés, connexion en cours...');
+        // Nettoyer l'URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        toast.success('🎉 Connexion réussie !', {
+          duration: 2000,
+          style: {
+            background: '#D1FAE5',
+            color: '#065F46',
+            fontWeight: '500',
+          }
+        });
+      }
+    };
+    
+    handleOAuthCallback();
+    
     const { data: { subscription } } = AuthService.onAuthStateChange((currentUser, session) => {
       setIsAuthenticated(!!currentUser);
       setUser(currentUser);
