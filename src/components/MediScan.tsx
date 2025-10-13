@@ -68,6 +68,8 @@ export default function MediScan() {
   const [showAboutPage, setShowAboutPage] = useState<boolean>(false);
   const [showMobileMenu, setShowMobileMenu] = useState<boolean>(false);
   const [showSplashScreen, setShowSplashScreen] = useState<boolean>(true);
+  const [freeAnalysesCount, setFreeAnalysesCount] = useState<number>(0);
+  const FREE_ANALYSES_LIMIT = 3;
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -133,26 +135,49 @@ export default function MediScan() {
   const analyserImage = async (fileOrBase64: File | string): Promise<AnalyseResultat> => {
     setEtape(Etape.ANALYSE);
     try {
-      // Vérifier que l'utilisateur est authentifié avec Supabase
+      // Vérifier si l'utilisateur peut analyser (soit connecté, soit dans la limite gratuite)
       if (!user) {
-      toast.error("🔐 Connectez-vous pour analyser vos médicaments", {
-        duration: 4000,
-        style: {
-          background: '#FEE2E2',
-          color: '#991B1B',
-          fontWeight: '500',
+        // Mode essai gratuit : vérifier le nombre d'analyses
+        if (freeAnalysesCount >= FREE_ANALYSES_LIMIT) {
+          toast.error(`🔐 Vous avez utilisé vos ${FREE_ANALYSES_LIMIT} analyses gratuites ! Inscrivez-vous pour continuer`, {
+            duration: 5000,
+            style: {
+              background: '#FEE2E2',
+              color: '#991B1B',
+              fontWeight: '500',
+            }
+          });
+          setEtape(Etape.ACCUEIL);
+          setShowLoginForm(true);
+          return { error: "Limite d'essai atteinte" };
         }
-      });
-      setEtape(Etape.ACCUEIL);
-      // Stocker temporairement l'image pour l'analyse après connexion
-      const tempImageData = typeof fileOrBase64 === 'string' ? fileOrBase64 : null;
-      if (tempImageData) {
-        setImageData(tempImageData);
-      }
-      // Ouvrir le formulaire de connexion
-      setShowLoginForm(true);
-      
-      return { error: "Veuillez vous connecter" };
+        
+        // Incrémenter le compteur d'analyses gratuites
+        const newCount = freeAnalysesCount + 1;
+        setFreeAnalysesCount(newCount);
+        localStorage.setItem('freeAnalysesCount', newCount.toString());
+        
+        // Afficher un message informatif
+        const remainingAnalyses = FREE_ANALYSES_LIMIT - newCount;
+        if (remainingAnalyses > 0) {
+          toast.success(`🎁 Essai gratuit : ${remainingAnalyses} analyse${remainingAnalyses > 1 ? 's' : ''} restante${remainingAnalyses > 1 ? 's' : ''}`, {
+            duration: 4000,
+            style: {
+              background: '#DBEAFE',
+              color: '#1E40AF',
+              fontWeight: '500',
+            }
+          });
+        } else {
+          toast.success(`✨ Dernière analyse gratuite ! Inscrivez-vous pour continuer`, {
+            duration: 5000,
+            style: {
+              background: '#FEF3C7',
+              color: '#92400E',
+              fontWeight: '500',
+            }
+          });
+        }
       }
 
       // Gérer à la fois les fichiers et les chaînes base64
@@ -166,23 +191,21 @@ export default function MediScan() {
         file = fileOrBase64;
       }
 
-      // Upload vers Supabase Storage
+      // Upload vers Supabase Storage (uniquement pour les utilisateurs connectés)
       let imageUrl: string;
-      try {
-        imageUrl = await StorageService.uploadMedicamentImage(file);
-        console.log("Image uploadée vers Supabase Storage:", imageUrl);
-      } catch (uploadError) {
-        console.error("Erreur lors de l'upload:", uploadError);
-        // Fallback vers URL locale si l'upload échoue
+      if (user) {
+        try {
+          imageUrl = await StorageService.uploadMedicamentImage(file);
+          console.log("Image uploadée vers Supabase Storage:", imageUrl);
+        } catch (uploadError) {
+          console.error("Erreur lors de l'upload:", uploadError);
+          // Fallback vers URL locale si l'upload échoue
+          imageUrl = URL.createObjectURL(file);
+        }
+      } else {
+        // Mode essai gratuit : utiliser une URL locale (pas de sauvegarde en ligne)
         imageUrl = URL.createObjectURL(file);
-        toast.error("📸 L'image sera analysée mais pas sauvegardée en ligne", {
-          duration: 3000,
-          style: {
-            background: '#FEF3C7',
-            color: '#92400E',
-            fontWeight: '500',
-          }
-        });
+        console.log("Mode essai gratuit : utilisation d'une URL locale");
       }
       
       console.log("Image téléchargée avec succès:", imageUrl);
@@ -232,7 +255,7 @@ export default function MediScan() {
         setResultat(resultat);
         setEtape(Etape.RESULTAT);
         
-        // Sauvegarder automatiquement l'analyse dans Supabase
+        // Sauvegarder automatiquement l'analyse dans Supabase (uniquement pour utilisateurs connectés)
         if (user) {
           try {
             await AnalysesService.saveAnalyse({
@@ -261,6 +284,17 @@ export default function MediScan() {
               }
             });
           }
+        } else {
+          // Mode essai gratuit : informer que l'analyse ne sera pas sauvegardée
+          toast("ℹ️ Connectez-vous pour sauvegarder vos analyses", {
+            duration: 3000,
+            icon: '💾',
+            style: {
+              background: '#DBEAFE',
+              color: '#1E40AF',
+              fontWeight: '500',
+            }
+          });
         }
         
         return resultat;
@@ -309,6 +343,12 @@ export default function MediScan() {
 
   // Gérer l'authentification avec Supabase
   useEffect(() => {
+    // Charger le compteur d'analyses gratuites depuis localStorage
+    const savedCount = localStorage.getItem('freeAnalysesCount');
+    if (savedCount) {
+      setFreeAnalysesCount(parseInt(savedCount, 10));
+    }
+    
     // Gérer les tokens OAuth dans l'URL (après connexion Google)
     const handleOAuthCallback = async () => {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -319,6 +359,10 @@ export default function MediScan() {
         console.log('🔐 Tokens OAuth détectés, connexion en cours...');
         // Nettoyer l'URL
         window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Réinitialiser le compteur d'analyses gratuites après connexion
+        localStorage.removeItem('freeAnalysesCount');
+        setFreeAnalysesCount(0);
         
         toast.success('🎉 Connexion réussie !', {
           duration: 2000,
@@ -493,6 +537,13 @@ export default function MediScan() {
               <h1 className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#89CFF0] to-[#5AB0E2]">
                 MediScan
               </h1>
+              
+              {/* Badge d'essai gratuit pour les utilisateurs non connectés */}
+              {!isAuthenticated && freeAnalysesCount < FREE_ANALYSES_LIMIT && (
+                <div className="hidden sm:flex ml-2 px-3 py-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full text-xs font-semibold text-white shadow-lg">
+                  🎁 {FREE_ANALYSES_LIMIT - freeAnalysesCount} essai{FREE_ANALYSES_LIMIT - freeAnalysesCount > 1 ? 's' : ''} gratuit{FREE_ANALYSES_LIMIT - freeAnalysesCount > 1 ? 's' : ''}
+                </div>
+              )}
             </div>
             
             {/* Menu pour petit écran */}

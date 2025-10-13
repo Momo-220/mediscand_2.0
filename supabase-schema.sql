@@ -133,3 +133,4 @@ COMMENT ON TABLE analyses IS 'Analyses de médicaments effectuées par les utili
 
 COMMENT ON COLUMN analyses.details_analyse IS 'Détails complets de l''analyse au format JSON';
 COMMENT ON COLUMN analyses.image_url IS 'URL de l''image du médicament stockée dans Supabase Storage';
+

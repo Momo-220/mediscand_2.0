@@ -17,3 +17,4 @@ export async function GET(request: NextRequest) {
   // Rediriger vers la page principale après authentification
   return NextResponse.redirect(`${requestUrl.origin}/`)
 }
+

@@ -184,3 +184,4 @@ NEXT_PUBLIC_DEBUG=true
    - Notifications push
    - Synchronisation hors ligne
    - Analytics et métriques
+
