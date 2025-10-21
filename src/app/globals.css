@@ -913,3 +913,192 @@ iframe.skiptranslate {
 .goog-te-ftab-link:active {
   display: none !important;
 }
+
+/* 11. Masquer l'icône Google Translate spécifique (carré bleu avec G et A) */
+.goog-te-gadget-icon,
+.goog-te-gadget-icon img,
+.goog-te-gadget-icon svg,
+.goog-te-gadget-icon::before,
+.goog-te-gadget-icon::after,
+.goog-te-gadget-icon * {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+}
+
+/* 12. Masquer tous les éléments avec l'icône Google Translate */
+[class*="goog-te-gadget"],
+[class*="goog-te-combo"],
+[class*="goog-te-menu"],
+[class*="goog-te-banner"],
+[class*="skiptranslate"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* 13. Masquer spécifiquement l'icône de traduction */
+.goog-te-gadget-simple .goog-te-gadget-icon,
+.goog-te-gadget-simple .goog-te-gadget-icon img,
+.goog-te-gadget-simple .goog-te-gadget-icon svg {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+}
+
+/* 14. Masquer le conteneur parent de l'icône */
+.goog-te-gadget-simple {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+}
+
+/* 15. Masquer tous les éléments Google Translate restants */
+body > .goog-te-banner-frame,
+body > .skiptranslate,
+.goog-te-banner-frame,
+.skiptranslate,
+#google_translate_element,
+#google_translate_element_hidden,
+.goog-te-gadget,
+.goog-te-gadget-simple,
+.goog-te-menu-value,
+.goog-te-menu-value span,
+.goog-te-combo,
+.goog-te-combo * {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  pointer-events: none !important;
+}
+
+/* 16. Masquer l'icône spécifique Google Translate (cercle bleu avec G et A) */
+.VIpgJd-ZVi9od-l4eHX-hSRGPd,
+.VIpgJd-ZVi9od-eFMyYd,
+.VIpgJd-ZVi9od-eFMyYd.VIpgJd-ZVi9od-eFMyYd-default,
+.VIpgJd-ZVi9od-ORHb,
+.VIpgJd-ZVi9od-ORHb.VIpgJd-ZVi9od-ORHb-default,
+.VIpgJd-ZVi9od-ORHb.VIpgJd-ZVi9od-ORHb-default.VIpgJd-ZVi9od-ORHb-default {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+
+/* 17. Masquer les éléments de la barre de traduction */
+.goog-toolbar,
+.goog-toolbar *,
+.gt_selector_div,
+.gt_float_menu_box,
+.goog-te-combo-col {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+
+/* 18. Masquer les éléments de style injectés par Google */
+.goog-text-highlight,
+.goog-tooltip--open,
+.skiptranslate.goog-te-gadget {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+
+/* 19. Masquer les iframes Google Translate */
+iframe.goog-te-banner-frame,
+iframe.skiptranslate {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+
+/* 20. Assurer que le body n'a pas de padding-top */
+body.skiptranslate {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+  top: 0 !important;
+}
+
+/* 21. Masquer tous les éléments avec des classes Google Translate */
+[class*="VIpgJd"],
+[class*="goog-te"],
+[class*="skiptranslate"],
+[class*="gt_"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+
+/* 22. Masquer les éléments avec des IDs Google Translate */
+[id*="google_translate"],
+[id*="goog-te"],
+[id*="gt_"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}

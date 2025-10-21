@@ -211,28 +211,59 @@ export default function MediScan() {
       
       console.log("Image téléchargée avec succès:", imageUrl);
       
-      // Appel à l'API réelle d'analyse d'image de médicament
-      try {
-        // Préparer les données pour l'API
-        const formData = new FormData();
-        formData.append('image', file);
-        
-        // Appel à l'API d'analyse de médicaments
-        const response = await fetch('/api/analyser-medicament', {
-          method: 'POST',
-          body: formData,
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Erreur lors de l'analyse du médicament");
+      // Appel à l'API réelle d'analyse d'image de médicament avec retry automatique
+      let analysisResult;
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (retryCount < maxRetries) {
+        try {
+          // Préparer les données pour l'API
+          const formData = new FormData();
+          formData.append('image', file);
+          
+          // Appel à l'API d'analyse de médicaments
+          const response = await fetch('/api/analyser-medicament', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Erreur lors de l'analyse du médicament");
+          }
+          
+          // Récupérer les résultats de l'analyse
+          analysisResult = await response.json();
+          
+          // Si on arrive ici, l'analyse a réussi
+          break;
+          
+        } catch (error: any) {
+          retryCount++;
+          console.log(`🔄 Tentative ${retryCount}/${maxRetries} échouée:`, error.message);
+          
+          if (retryCount >= maxRetries) {
+            throw error; // Re-lancer l'erreur après tous les essais
+          }
+          
+          // Attendre avant de réessayer (délai progressif)
+          await new Promise(resolve => setTimeout(resolve, retryCount * 1000));
+          
+          // Afficher un message de retry
+          toast(`🔄 Nouvelle tentative ${retryCount}/${maxRetries}...`, {
+            duration: 2000,
+            style: {
+              background: '#FEF3C7',
+              color: '#92400E',
+              fontWeight: '500',
+            }
+          });
         }
-        
-        // Récupérer les résultats de l'analyse
-        const analysisResult = await response.json();
-        
-        // Créer l'objet résultat à partir des données réelles
-        const resultat: AnalyseResultat = {
+      }
+      
+      // Créer l'objet résultat à partir des données réelles
+      const resultat: AnalyseResultat = {
           nom: analysisResult.nom || "Médicament inconnu",
           description: analysisResult.description || "Aucune description disponible",
           image: imageUrl,
@@ -311,25 +342,6 @@ export default function MediScan() {
           error: "Erreur d'analyse de l'image" 
         };
       }
-      
-    } catch (error: any) {
-      console.error("Erreur lors de l'analyse:", error);
-      
-      // Gestion spécifique des erreurs de stockage
-      if (error.code?.includes('storage/')) {
-        if (error.code === 'storage/unauthorized') {
-          toast.error("Accès non autorisé. Veuillez vous reconnecter.");
-        } else {
-          toast.error(`Erreur de stockage: ${error.message}`);
-        }
-      } else {
-        toast.error("Erreur lors de l'analyse de l'image");
-      }
-      
-      setErreur(error.message || "Erreur inconnue lors de l'analyse");
-      setEtape(Etape.CAPTURE);
-      return { error: error.message || "Erreur inconnue lors de l'analyse" };
-    }
   };
 
   const retourAccueil = useCallback(() => {
