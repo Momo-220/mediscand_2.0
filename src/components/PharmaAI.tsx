@@ -39,6 +39,7 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
   const [processingMessageId, setProcessingMessageId] = useState<string | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [visibleChars, setVisibleChars] = useState<number[]>([0]);
+  const [textareaHeight, setTextareaHeight] = useState<number>(40); // Hauteur initiale en pixels
 
   // Générer un ID unique pour chaque message
   const generateId = () => {
@@ -53,6 +54,8 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
   useEffect(() => {
     // Focus sur le champ de saisie quand le composant est monté
     inputRef.current?.focus();
+    // Ajuster la hauteur initiale
+    adjustTextareaHeight();
   }, []);
 
   // Nettoyer l'AbortController lorsque le composant est démonté
@@ -247,6 +250,7 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
 
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
+    setTextareaHeight(40); // Réinitialiser la hauteur
     setIsProcessing(true);
 
     try {
@@ -295,6 +299,27 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  // Fonction pour ajuster automatiquement la hauteur du textarea
+  const adjustTextareaHeight = () => {
+    if (inputRef.current) {
+      // Réinitialiser la hauteur pour calculer la hauteur de contenu
+      inputRef.current.style.height = 'auto';
+      // Calculer la nouvelle hauteur basée sur le contenu
+      const scrollHeight = inputRef.current.scrollHeight;
+      // Limiter la hauteur maximale (environ 6 lignes)
+      const maxHeight = 120; // pixels
+      const newHeight = Math.min(scrollHeight, maxHeight);
+      setTextareaHeight(newHeight);
+      inputRef.current.style.height = `${newHeight}px`;
+    }
+  };
+
+  // Fonction pour gérer les changements dans le textarea
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputMessage(e.target.value);
+    adjustTextareaHeight();
   };
 
   // Je réimplémente la fonction handleKeyDown qui a été supprimée
@@ -452,10 +477,15 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
                 <textarea
                   ref={inputRef}
                   value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
+                  onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
                   placeholder="Posez votre question..."
-                  className="w-full bg-transparent border-0 focus:ring-0 outline-none text-gray-800 resize-none max-h-32 text-sm"
+                  className="w-full bg-transparent border-0 focus:ring-0 outline-none text-gray-800 resize-none text-sm transition-all duration-200 ease-in-out"
+                  style={{ 
+                    height: `${textareaHeight}px`,
+                    minHeight: '40px',
+                    maxHeight: '120px'
+                  }}
                   rows={1}
                   disabled={isProcessing}
                 />

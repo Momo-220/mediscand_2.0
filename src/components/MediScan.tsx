@@ -15,6 +15,7 @@ import AboutPage from './AboutPage';
 import SplashScreen from './SplashScreen';
 import { AuthService, AnalysesService, StorageService, SupabaseAnalyse } from '../supabase';
 import type { User } from '@supabase/supabase-js';
+import AutoTranslateWidget from './AutoTranslateWidget';
 
 enum Etape {
   ACCUEIL = 'ACCUEIL',
@@ -519,6 +520,9 @@ export default function MediScan() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-cyan-50 to-blue-50 p-4 sm:p-6 lg:p-8" suppressHydrationWarning>
+      {/* 🌐 Widget de traduction automatique */}
+      <AutoTranslateWidget />
+      
       {showSplashScreen && (
         <SplashScreen onComplete={() => setShowSplashScreen(false)} />
       )}

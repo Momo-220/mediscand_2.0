@@ -807,3 +807,109 @@ input:checked + .theme-slider:after {
 .dark .formatted-message h4 {
   color: #34d399; /* green-400 */
 }
+
+/* ==========================================
+   MASQUER COMPLÈTEMENT GOOGLE TRANSLATE
+   ========================================== */
+
+/* 1. Empêcher le décalage du body */
+body {
+  top: 0 !important;
+  position: static !important;
+}
+
+/* 2. Cacher la barre du haut */
+.goog-te-banner-frame,
+.goog-te-banner-frame.skiptranslate,
+body > .skiptranslate {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* 3. Cacher le widget et tous les éléments Google */
+.goog-te-gadget,
+.goog-te-gadget-simple,
+.goog-te-menu-value span,
+.goog-te-gadget-icon,
+#google_translate_element,
+#google_translate_element_hidden,
+.goog-te-balloon-frame,
+#goog-gt-tt,
+.goog-tooltip {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* 4. Cacher "Powered by Google" */
+.goog-te-gadget > span,
+.goog-logo-link,
+.goog-te-gadget .goog-te-combo {
+  display: none !important;
+}
+
+/* 5. Supprimer les bordures de traduction */
+.translated,
+font[style*="vertical-align: inherit"] {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 6. Masquer les iframes Google Translate */
+iframe.goog-te-banner-frame,
+iframe.skiptranslate {
+  display: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* 7. Empêcher le décalage du contenu */
+.translated-ltr,
+.translated-rtl {
+  margin-top: 0 !important;
+  top: 0 !important;
+}
+
+/* 8. Animations pour les notifications de traduction */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* 9. S'assurer que les éléments traduits gardent le style MediScan */
+.translated * {
+  font-family: inherit !important;
+  color: inherit !important;
+  background: inherit !important;
+}
+
+/* 10. Masquer les éléments de debug Google Translate */
+.goog-te-ftab,
+.goog-te-ftab-link,
+.goog-te-ftab-link:link,
+.goog-te-ftab-link:visited,
+.goog-te-ftab-link:hover,
+.goog-te-ftab-link:active {
+  display: none !important;
+}
