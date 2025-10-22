@@ -364,12 +364,16 @@ export default function MediScan() {
     
     // Gérer les tokens OAuth dans l'URL (après connexion Google)
     const handleOAuthCallback = async () => {
+      // Vérifier les tokens dans l'URL (hash ou query params)
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const accessToken = hashParams.get('access_token');
-      const refreshToken = hashParams.get('refresh_token');
+      const queryParams = new URLSearchParams(window.location.search);
+      
+      const accessToken = hashParams.get('access_token') || queryParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token') || queryParams.get('refresh_token');
       
       if (accessToken && refreshToken) {
         console.log('🔐 Tokens OAuth détectés, connexion en cours...');
+        
         // Nettoyer l'URL
         window.history.replaceState({}, document.title, window.location.pathname);
         
@@ -378,19 +382,30 @@ export default function MediScan() {
         setFreeAnalysesCount(0);
         
         toast.success('🎉 Connexion réussie !', {
-          duration: 2000,
+          duration: 3000,
           style: {
             background: '#D1FAE5',
             color: '#065F46',
             fontWeight: '500',
+            fontSize: '14px'
           }
         });
+        
+        // Forcer la mise à jour de l'état d'authentification
+        setTimeout(async () => {
+          const user = await AuthService.getCurrentUser();
+          if (user) {
+            setIsAuthenticated(true);
+            setUser(user);
+          }
+        }, 1000);
       }
     };
     
     handleOAuthCallback();
     
     const { data: { subscription } } = AuthService.onAuthStateChange((currentUser, session) => {
+      console.log('🔄 État d\'authentification changé:', { user: !!currentUser, session: !!session });
       setIsAuthenticated(!!currentUser);
       setUser(currentUser);
     });
