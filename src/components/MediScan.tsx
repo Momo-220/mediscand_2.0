@@ -827,6 +827,46 @@ export default function MediScan() {
                     </div>
                   </motion.div>
                 </div>
+
+                {/* Section PharmaAI - Positionnée comme les cartes d'accueil */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-8"
+                >
+                  <div className="text-center mb-6">
+                    <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                      Assistant <span className="text-[#5AB0E2]">PharmaAI</span>
+                    </h3>
+                    <p className="text-gray-600">
+                      Posez vos questions sur les médicaments à notre IA spécialisée
+                    </p>
+                  </div>
+                  
+                  <motion.div
+                    whileHover={{ y: -5, boxShadow: '0 15px 30px -5px rgba(137, 207, 240, 0.3)' }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setEtape(Etape.PHARMA_AI)}
+                    className="overflow-hidden rounded-2xl bg-gradient-to-br from-white to-cyan-50 border border-[#59C3F0]/30 shadow-lg transition-all duration-300 cursor-pointer group"
+                  >
+                    <div className="h-full p-8 flex flex-col items-center justify-center">
+                      <div className="w-20 h-20 bg-[#59C3F0]/20 rounded-full flex items-center justify-center mb-6 group-hover:bg-[#59C3F0]/30 transition-all duration-300">
+                        <svg className="w-10 h-10 text-[#59C3F0] group-hover:text-[#3D9AD2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-xl font-bold mb-3 text-center text-gray-800 group-hover:text-[#59C3F0] transition-colors">
+                        Chat avec PharmaAI
+                      </h3>
+                      <p className="text-gray-600 text-center mb-4 group-hover:text-gray-700 transition-colors">
+                        Obtenez des réponses instantanées sur vos médicaments
+                      </p>
+                      <div className="bg-[#59C3F0] hover:bg-[#3D9AD2] text-white py-2 px-6 rounded-full transition-colors font-medium">
+                        Ouvrir le chat
+                      </div>
+                    </div>
+                  </motion.div>
+                </motion.div>
               </motion.div>
             )}
 
@@ -876,6 +916,41 @@ export default function MediScan() {
                 </div>
                 <p className="mt-8 text-xl font-medium text-gray-800">Analyse en cours...</p>
                 <p className="text-gray-600 mt-3 text-lg">Veuillez patienter quelques instants</p>
+              </motion.div>
+            )}
+
+            {etape === Etape.PHARMA_AI && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-6"
+                suppressHydrationWarning
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#59C3F0] to-[#3D9AD2]">
+                    Assistant PharmaAI
+                  </h2>
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={retourAccueil}
+                    className="bg-[#59C3F0] hover:bg-[#3D9AD2] text-white py-2 px-5 rounded-full flex items-center gap-2 transition-colors shadow-md hover:shadow-lg"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Retour à l'accueil
+                  </motion.button>
+                </div>
+
+                {/* PharmaAI intégré dans le layout principal */}
+                <div className="rounded-2xl overflow-hidden bg-white shadow-lg border border-[#59C3F0]/20 h-[600px]">
+                  <PharmaAI 
+                    user={user}
+                    onClose={retourAccueil}
+                  />
+                </div>
               </motion.div>
             )}
 
@@ -946,13 +1021,6 @@ export default function MediScan() {
         />
       )}
 
-      {/* Afficher PharmaAI comme page complète */}
-      {etape === Etape.PHARMA_AI && (
-        <PharmaAI 
-          user={user}
-          onClose={() => setEtape(Etape.ACCUEIL)}
-        />
-      )}
 
       {/* Ajouter la page À propos */}
       {showAboutPage && (
