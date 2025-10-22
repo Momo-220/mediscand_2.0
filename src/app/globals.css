@@ -993,16 +993,15 @@ body > .skiptranslate,
   pointer-events: none !important;
 }
 
-/* 16. Masquer l'icône spécifique Google Translate (cercle bleu avec G et A) */
+/* 16. Masquer l'icône spécifique Google Translate (cercle bleu avec G et A) - PRÉSERVER LA FONCTIONNALITÉ */
 .VIpgJd-ZVi9od-l4eHX-hSRGPd,
 .VIpgJd-ZVi9od-eFMyYd,
 .VIpgJd-ZVi9od-eFMyYd.VIpgJd-ZVi9od-eFMyYd-default,
 .VIpgJd-ZVi9od-ORHb,
 .VIpgJd-ZVi9od-ORHb.VIpgJd-ZVi9od-ORHb-default,
 .VIpgJd-ZVi9od-ORHb.VIpgJd-ZVi9od-ORHb-default.VIpgJd-ZVi9od-ORHb-default {
-  display: none !important;
-  visibility: hidden !important;
   opacity: 0 !important;
+  visibility: hidden !important;
   width: 0 !important;
   height: 0 !important;
   position: absolute !important;
@@ -1010,6 +1009,7 @@ body > .skiptranslate,
   top: -9999px !important;
   pointer-events: none !important;
   overflow: hidden !important;
+  /* NE PAS utiliser display: none pour préserver la fonctionnalité */
 }
 
 /* 17. Masquer les éléments de la barre de traduction */
@@ -1070,14 +1070,13 @@ body.skiptranslate {
   top: 0 !important;
 }
 
-/* 21. Masquer tous les éléments avec des classes Google Translate */
+/* 21. Masquer tous les éléments avec des classes Google Translate - PRÉSERVER LA FONCTIONNALITÉ */
 [class*="VIpgJd"],
 [class*="goog-te"],
 [class*="skiptranslate"],
 [class*="gt_"] {
-  display: none !important;
-  visibility: hidden !important;
   opacity: 0 !important;
+  visibility: hidden !important;
   width: 0 !important;
   height: 0 !important;
   position: absolute !important;
@@ -1085,15 +1084,15 @@ body.skiptranslate {
   top: -9999px !important;
   pointer-events: none !important;
   overflow: hidden !important;
+  /* NE PAS utiliser display: none pour préserver la fonctionnalité */
 }
 
-/* 22. Masquer les éléments avec des IDs Google Translate */
+/* 22. Masquer les éléments avec des IDs Google Translate - PRÉSERVER LA FONCTIONNALITÉ */
 [id*="google_translate"],
 [id*="goog-te"],
 [id*="gt_"] {
-  display: none !important;
-  visibility: hidden !important;
   opacity: 0 !important;
+  visibility: hidden !important;
   width: 0 !important;
   height: 0 !important;
   position: absolute !important;
@@ -1101,4 +1100,5 @@ body.skiptranslate {
   top: -9999px !important;
   pointer-events: none !important;
   overflow: hidden !important;
+  /* NE PAS utiliser display: none pour préserver la fonctionnalité */
 }

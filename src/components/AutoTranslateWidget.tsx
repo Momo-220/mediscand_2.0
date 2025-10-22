@@ -186,7 +186,7 @@ export const AutoTranslateWidget = () => {
          const elements = document.querySelectorAll(selector);
          elements.forEach(element => {
            if (element instanceof HTMLElement) {
-             element.style.display = 'none';
+             // Masquer visuellement SANS casser la fonctionnalité
              element.style.visibility = 'hidden';
              element.style.opacity = '0';
              element.style.width = '0';
@@ -197,15 +197,7 @@ export const AutoTranslateWidget = () => {
              element.style.pointerEvents = 'none';
              element.style.overflow = 'hidden';
              element.style.zIndex = '-9999';
-             
-             // Supprimer complètement l'élément si possible
-             try {
-               if (element.parentNode && element.id !== 'google_translate_element_hidden') {
-                 element.remove();
-               }
-             } catch (e) {
-               // Ignorer les erreurs de suppression
-             }
+             // NE PAS utiliser display: none pour préserver la traduction
            }
          });
        });
@@ -223,7 +215,7 @@ export const AutoTranslateWidget = () => {
            );
            
            if (hasGoogleClass) {
-             element.style.display = 'none';
+             // Masquer visuellement SANS casser la fonctionnalité
              element.style.visibility = 'hidden';
              element.style.opacity = '0';
              element.style.width = '0';
@@ -234,6 +226,7 @@ export const AutoTranslateWidget = () => {
              element.style.pointerEvents = 'none';
              element.style.overflow = 'hidden';
              element.style.zIndex = '-9999';
+             // NE PAS utiliser display: none pour préserver la traduction
            }
          }
        });
@@ -247,7 +240,7 @@ export const AutoTranslateWidget = () => {
                               element.id.includes('gt_');
            
            if (hasGoogleId) {
-             element.style.display = 'none';
+             // Masquer visuellement SANS casser la fonctionnalité
              element.style.visibility = 'hidden';
              element.style.opacity = '0';
              element.style.width = '0';
@@ -258,11 +251,12 @@ export const AutoTranslateWidget = () => {
              element.style.pointerEvents = 'none';
              element.style.overflow = 'hidden';
              element.style.zIndex = '-9999';
+             // NE PAS utiliser display: none pour préserver la traduction
            }
          }
        });
 
-       console.log('🎯 Icône Google Translate masquée avec succès (suppression agressive)');
+       console.log('🎯 Icône Google Translate masquée avec succès (traduction préservée)');
      } catch (error) {
        console.error('❌ Erreur lors du masquage de l\'icône:', error);
      }
