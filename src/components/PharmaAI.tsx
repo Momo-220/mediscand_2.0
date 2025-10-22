@@ -364,19 +364,37 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
 
   // Détecter les changements de taille de la fenêtre pour le mode responsive
   const [isMobile, setIsMobile] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   
   useEffect(() => {
+    setIsClient(true);
     const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      if (typeof window !== 'undefined') {
+        setIsMobile(window.innerWidth < 768);
+      }
     };
     
     checkIfMobile();
-    window.addEventListener('resize', checkIfMobile);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', checkIfMobile);
+    }
     
     return () => {
-      window.removeEventListener('resize', checkIfMobile);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', checkIfMobile);
+      }
     };
   }, []);
+
+  // Éviter les erreurs d'hydratation
+  if (!isClient) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#59C3F0]"></div>
+        <p className="mt-2 text-gray-600">Chargement...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-full flex flex-col">
