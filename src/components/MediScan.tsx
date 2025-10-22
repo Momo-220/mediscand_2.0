@@ -532,7 +532,7 @@ export default function MediScan() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-cyan-50 to-blue-50 p-4 sm:p-6 lg:p-8" suppressHydrationWarning>
-      {/* 🌐 Widget de traduction automatique */}
+      {/* 🌐 Widget de traduction automatique - IMMÉDIAT */}
       <AutoTranslateWidget />
       
       {showSplashScreen && (

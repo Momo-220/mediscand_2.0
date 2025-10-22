@@ -9,12 +9,24 @@ export const AutoTranslateWidget = () => {
 
     console.log('🌐 Langue détectée pour MediScan:', browserLang);
 
-    // 2. Si ce n'est pas français, activer la traduction
+    // 2. Si ce n'est pas français, activer la traduction IMMÉDIATE
     if (browserLang !== 'fr') {
       
-      // 3. Vérifier si Google Translate est déjà chargé
+      // 3. Démarrer la traduction immédiatement (sans attendre Google Translate)
+      console.log('🚀 Démarrage de la traduction IMMÉDIATE...');
+      
+      // Masquer l'icône immédiatement
+      hideGoogleTranslateIcon();
+      
+      // Démarrer l'observateur de mutations immédiatement
+      startMutationObserver();
+      
+      // Démarrer la surveillance continue immédiatement
+      startContinuousIconWatcher();
+      
+      // Vérifier si Google Translate est déjà chargé
       if (typeof (window as any).google !== 'undefined' && (window as any).google.translate) {
-        console.log('✅ Google Translate déjà chargé');
+        console.log('✅ Google Translate déjà chargé - traduction immédiate !');
         initializeTranslation(browserLang);
         return;
       }
@@ -46,53 +58,53 @@ export const AutoTranslateWidget = () => {
           'google_translate_element_hidden' // ID du conteneur caché
         );
 
-         // 5. Déclencher la traduction automatique après 1.5 secondes
-         setTimeout(() => {
-           initializeTranslation(browserLang);
-         }, 1500);
+         // 5. Déclencher la traduction automatique IMMÉDIATEMENT (plus d'attente)
+         console.log('⚡ Traduction immédiate déclenchée !');
+         initializeTranslation(browserLang);
          
-         // 6. Forcer la re-traduction après 3 secondes pour s'assurer que tout est traduit
+         // 6. Forcer la re-traduction après 1 seconde pour s'assurer que tout est traduit
          setTimeout(() => {
            forceRetranslation(browserLang);
-         }, 3000);
+         }, 1000);
+         
+         // 7. Forcer une deuxième re-traduction après 2 secondes pour les éléments dynamiques
+         setTimeout(() => {
+           forceRetranslation(browserLang);
+         }, 2000);
        };
      } else {
        console.log('🇫🇷 MediScan en français (langue par défaut)');
      }
    }, []);
 
-   // Fonction pour initialiser la traduction
-   const initializeTranslation = (browserLang: string) => {
-     try {
-       const select = document.querySelector('.goog-te-combo') as HTMLSelectElement;
-       if (select) {
-         select.value = browserLang;
-         select.dispatchEvent(new Event('change'));
-         console.log('✅ MediScan traduit vers', browserLang);
-         showTranslationNotification(browserLang);
-         
-         // Forcer la suppression de l'icône Google Translate après traduction
-         setTimeout(() => {
-           hideGoogleTranslateIcon();
-         }, 2000);
-         
-         // Démarrer l'observateur de mutations pour masquer automatiquement les nouvelles icônes
-         startMutationObserver();
-         
-         // Démarrer la surveillance du contenu non traduit
-         startContentWatcher(browserLang);
-         
-         // Démarrer la surveillance continue de l'icône Google Translate
-         startContinuousIconWatcher();
-       } else {
-         console.log('⏳ Sélecteur Google Translate pas encore prêt, nouvelle tentative...');
-         setTimeout(() => initializeTranslation(browserLang), 500);
-       }
-     } catch (error) {
-       console.error('❌ Erreur lors de la traduction:', error);
-       showTranslationBlockedMessage(browserLang);
-     }
-   };
+  // Fonction pour initialiser la traduction
+  const initializeTranslation = (browserLang: string) => {
+    try {
+      const select = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+      if (select) {
+        select.value = browserLang;
+        select.dispatchEvent(new Event('change'));
+        console.log('✅ MediScan traduit vers', browserLang);
+        showTranslationNotification(browserLang);
+        
+        // Forcer la suppression de l'icône Google Translate après traduction
+        setTimeout(() => {
+          hideGoogleTranslateIcon();
+        }, 1000); // Réduit de 2000ms à 1000ms
+        
+        // Démarrer la surveillance du contenu non traduit
+        startContentWatcher(browserLang);
+        
+      } else {
+        console.log('⏳ Sélecteur Google Translate pas encore prêt, nouvelle tentative...');
+        // Réduire l'intervalle de 500ms à 200ms pour une réponse plus rapide
+        setTimeout(() => initializeTranslation(browserLang), 200);
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors de la traduction:', error);
+      showTranslationBlockedMessage(browserLang);
+    }
+  };
 
    // Fonction pour forcer la re-traduction
    const forceRetranslation = (browserLang: string) => {
@@ -104,7 +116,7 @@ export const AutoTranslateWidget = () => {
          select.value = 'fr'; // Revenir au français
          select.dispatchEvent(new Event('change'));
          
-         // Puis retraduire vers la langue cible
+         // Puis retraduire vers la langue cible (plus rapide)
          setTimeout(() => {
            select.value = browserLang;
            select.dispatchEvent(new Event('change'));
@@ -113,11 +125,11 @@ export const AutoTranslateWidget = () => {
            // Forcer la traduction des éléments React
            forceReactTranslation();
            
-           // Masquer à nouveau l'icône
+           // Masquer à nouveau l'icône (plus rapide)
            setTimeout(() => {
              hideGoogleTranslateIcon();
-           }, 1000);
-         }, 500);
+           }, 500); // Réduit de 1000ms à 500ms
+         }, 200); // Réduit de 500ms à 200ms
        }
      } catch (error) {
        console.error('❌ Erreur lors de la re-traduction:', error);
@@ -302,8 +314,12 @@ export const AutoTranslateWidget = () => {
          const untranslatedElements = document.querySelectorAll('*:not(.translated):not(.notranslate)');
          const hasFrenchText = Array.from(untranslatedElements).some(element => {
            const text = element.textContent || '';
-           // Mots français courants dans MediScan
-           const frenchWords = ['Analyser', 'Médicament', 'Historique', 'Connexion', 'Inscription', 'PharmaAI', 'Comment ça marche', 'À propos'];
+           // Mots français courants dans MediScan (liste étendue)
+           const frenchWords = ['Analyser', 'Médicament', 'Historique', 'Connexion', 'Inscription', 'PharmaAI', 'Comment ça marche', 'À propos', 
+                               'Caméra', 'Télécharger', 'Résultat', 'Dosage', 'Posologie', 'Contre-indication', 'Effets secondaires', 
+                               'Interactions', 'Précautions', 'Conservation', 'Laboratoire', 'Forme pharmaceutique', 'Classe thérapeutique',
+                               'Indications', 'Se connecter', 'Créer un compte', 'Mot de passe', 'Email', 'Nom', 'Prénom', 'Annuler', 'Valider',
+                               'Retour', 'Suivant', 'Précédent', 'Fermer', 'Ouvrir', 'Sauvegarder', 'Supprimer', 'Modifier', 'Rechercher'];
            return frenchWords.some(word => text.includes(word));
          });
 
@@ -311,13 +327,13 @@ export const AutoTranslateWidget = () => {
            console.log('🔍 Contenu français détecté, re-traduction...');
            forceRetranslation(browserLang);
          }
-       }, 2000); // Vérifier toutes les 2 secondes
+       }, 1000); // Vérifier toutes les 1 seconde (plus agressif)
 
-       // Arrêter la surveillance après 30 secondes
+       // Arrêter la surveillance après 60 secondes (plus long)
        setTimeout(() => {
          clearInterval(checkInterval);
          console.log('⏹️ Surveillance du contenu arrêtée');
-       }, 30000);
+       }, 60000);
 
        console.log('👀 Surveillance du contenu non traduit démarrée');
      } catch (error) {
@@ -328,10 +344,10 @@ export const AutoTranslateWidget = () => {
    // Fonction pour surveiller continuellement l'icône Google Translate
    const startContinuousIconWatcher = () => {
      try {
-       // Vérifier toutes les 500ms pendant 60 secondes
+       // Vérifier toutes les 200ms pendant 60 secondes (plus agressif)
        const checkInterval = setInterval(() => {
          hideGoogleTranslateIcon();
-       }, 500);
+       }, 200);
 
        // Arrêter la surveillance après 60 secondes
        setTimeout(() => {
