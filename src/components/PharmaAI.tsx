@@ -379,31 +379,39 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
   }, []);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-sm p-4">
-      <div className={`bg-white rounded-xl shadow-xl flex flex-col overflow-hidden ${
-        isMobile ? 'w-full h-[90vh]' : 'w-full max-w-3xl h-[80vh]'
-      }`}>
-        <div className="bg-gradient-to-r from-[#89CFF0] to-[#5AB0E2] py-3 px-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-              </svg>
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-cyan-50 to-blue-50">
+      {/* Header responsive */}
+      <div className="bg-gradient-to-r from-[#89CFF0] to-[#5AB0E2] shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4 sm:py-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">PharmaAI</h1>
+                <p className="text-white/80 text-sm sm:text-base">Assistant pharmaceutique intelligent</p>
+              </div>
             </div>
-            <h2 className="text-lg font-medium text-white">PharmaAI</h2>
+            <button
+              onClick={onClose}
+              className="flex items-center gap-2 text-white/80 hover:text-white p-2 sm:p-3 rounded-full transition-colors hover:bg-white/10"
+            >
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              <span className="hidden sm:inline text-sm sm:text-base font-medium">Retour</span>
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="text-white/80 hover:text-white p-1 rounded-full transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
         </div>
-        
-        <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-          <div className="max-w-2xl mx-auto space-y-4">
+      </div>
+      
+      {/* Zone de messages responsive */}
+      <div className="flex-1 overflow-y-auto bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="space-y-4 sm:space-y-6">
             <AnimatePresence initial={false}>
               {messages.map((message) => (
                 <motion.div
@@ -412,25 +420,25 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
-                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-3`}
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-3 sm:mb-4`}
                 >
                   {/* Icône pour les messages de l'assistant */}
                   {message.role === 'assistant' && (
-                    <div className="w-8 h-8 rounded-full bg-[#89CFF0]/20 flex-shrink-0 flex items-center justify-center mr-2">
-                      <svg className="w-4 h-4 text-[#5AB0E2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#89CFF0]/20 flex-shrink-0 flex items-center justify-center mr-2 sm:mr-3">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#5AB0E2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                       </svg>
                     </div>
                   )}
                   
                   <div 
-                    className={`rounded-lg px-3 py-2 max-w-[85%] shadow-sm ${
+                    className={`rounded-lg px-3 py-2 sm:px-4 sm:py-3 max-w-[85%] sm:max-w-[75%] lg:max-w-[65%] shadow-sm ${
                       message.role === 'user'
                         ? 'bg-[#89CFF0] text-white'
                         : 'bg-white text-gray-800 border border-gray-200'
                     }`}
                   >
-                    <div className="text-sm">
+                    <div className="text-sm sm:text-base">
                       {message.role === 'assistant' ? (
                         <FormattedMessage 
                           content={message.content} 
@@ -457,8 +465,8 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
                   
                   {/* Icône pour les messages de l'utilisateur */}
                   {message.role === 'user' && (
-                    <div className="w-8 h-8 rounded-full bg-[#89CFF0] flex-shrink-0 flex items-center justify-center ml-2">
-                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#89CFF0] flex-shrink-0 flex items-center justify-center ml-2 sm:ml-3">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                     </div>
@@ -469,18 +477,21 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
             <div ref={messagesEndRef} />
           </div>
         </div>
-        
-        <form onSubmit={handleSendMessage} className="p-3 bg-white border-t border-gray-200">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-end gap-2">
-              <div className="flex-1 bg-gray-100 rounded-lg px-3 py-2 shadow-inner">
+      </div>
+      
+      {/* Zone de saisie responsive */}
+      <div className="bg-white border-t border-gray-200 shadow-lg">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <form onSubmit={handleSendMessage}>
+            <div className="flex items-end gap-3 sm:gap-4">
+              <div className="flex-1 bg-gray-100 rounded-lg sm:rounded-xl px-3 py-2 sm:px-4 sm:py-3 shadow-inner">
                 <textarea
                   ref={inputRef}
                   value={inputMessage}
                   onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
-                  placeholder="Posez votre question..."
-                  className="w-full bg-transparent border-0 focus:ring-0 outline-none text-gray-800 resize-none text-sm transition-all duration-200 ease-in-out"
+                  placeholder="Posez votre question à PharmaAI..."
+                  className="w-full bg-transparent border-0 focus:ring-0 outline-none text-gray-800 resize-none text-sm sm:text-base transition-all duration-200 ease-in-out"
                   style={{ 
                     height: `${textareaHeight}px`,
                     minHeight: '40px',
@@ -493,26 +504,26 @@ export default function PharmaAI({ user, onClose }: PharmaAIProps) {
               <button
                 type="submit"
                 disabled={!inputMessage.trim() || isProcessing}
-                className={`rounded-full p-2.5 shadow transition-all ${
+                className={`rounded-full p-2.5 sm:p-3 shadow-lg transition-all ${
                   inputMessage.trim() && !isProcessing
-                    ? 'bg-[#89CFF0] text-white hover:bg-[#74B9FF]'
+                    ? 'bg-[#89CFF0] text-white hover:bg-[#74B9FF] hover:scale-105'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
                 {isProcessing ? (
-                  <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
                 ) : (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
                 )}
               </button>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

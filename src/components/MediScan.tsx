@@ -23,7 +23,8 @@ enum Etape {
   ANALYSE = 'ANALYSE',
   RESULTAT = 'RESULTAT',
   HISTORIQUE = 'HISTORIQUE',
-  CAMERA = 'CAMERA'
+  CAMERA = 'CAMERA',
+  PHARMA_AI = 'PHARMA_AI'
 }
 
 // Définir l'interface AnalyseResultat
@@ -65,7 +66,6 @@ export default function MediScan() {
   const [showHistorique, setShowHistorique] = useState<boolean>(false);
   const [selectedAnalyse, setSelectedAnalyse] = useState<SupabaseAnalyse | null>(null);
   const [showLoginForm, setShowLoginForm] = useState<boolean>(false);
-  const [showPharmaAI, setShowPharmaAI] = useState<boolean>(false);
   const [showAboutPage, setShowAboutPage] = useState<boolean>(false);
   const [showMobileMenu, setShowMobileMenu] = useState<boolean>(false);
   const [showSplashScreen, setShowSplashScreen] = useState<boolean>(true);
@@ -579,7 +579,7 @@ export default function MediScan() {
               {isAuthenticated ? (
                 <>
                   <button
-                    onClick={() => setShowPharmaAI(true)}
+                    onClick={() => setEtape(Etape.PHARMA_AI)}
                     className="px-3 py-1.5 bg-[#59C3F0]/90 hover:bg-[#59C3F0] text-white rounded-md text-sm transition-all"
                   >
                     Pharma AI
@@ -644,7 +644,7 @@ export default function MediScan() {
                     <>
                       <button
                         onClick={() => {
-                          setShowPharmaAI(true);
+                          setEtape(Etape.PHARMA_AI);
                           setShowMobileMenu(false);
                         }}
                         className="w-full px-3 py-2 bg-[#59C3F0]/90 hover:bg-[#59C3F0] text-white rounded-md text-sm transition-all text-left"
@@ -931,11 +931,11 @@ export default function MediScan() {
         />
       )}
 
-      {/* Ajouter le chatbot PharmaAI */}
-      {showPharmaAI && (
+      {/* Afficher PharmaAI comme page complète */}
+      {etape === Etape.PHARMA_AI && (
         <PharmaAI 
           user={user}
-          onClose={() => setShowPharmaAI(false)}
+          onClose={() => setEtape(Etape.ACCUEIL)}
         />
       )}
 
