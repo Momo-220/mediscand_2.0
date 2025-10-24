@@ -13,6 +13,18 @@ const nextConfig = {
     ],
   },
   // Suppression de l'option swcMinify qui cause un avertissement
+  
+  // Configuration pour masquer les logs en production
+  env: {
+    NODE_ENV: process.env.NODE_ENV,
+  },
+  
+  // Configuration SWC pour masquer les logs en production
+  swcMinify: true,
+  compiler: {
+    // Supprime tous les console.log en production
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
 };
 
 export default nextConfig;

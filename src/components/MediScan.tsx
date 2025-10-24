@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { devLog, devError, hideConsoleInProduction } from '../utils/logger';
 import { motion, AnimatePresence } from 'framer-motion';
 import Camera from './Camera';
 import UploadImage from './UploadImage';
@@ -197,7 +198,7 @@ export default function MediScan() {
       if (user) {
         try {
           imageUrl = await StorageService.uploadMedicamentImage(file);
-          console.log("Image uploadée vers Supabase Storage:", imageUrl);
+          devLog("Image uploadée vers Supabase Storage:", imageUrl);
         } catch (uploadError) {
           console.error("Erreur lors de l'upload:", uploadError);
           // Fallback vers URL locale si l'upload échoue
@@ -206,10 +207,10 @@ export default function MediScan() {
       } else {
         // Mode essai gratuit : utiliser une URL locale (pas de sauvegarde en ligne)
         imageUrl = URL.createObjectURL(file);
-        console.log("Mode essai gratuit : utilisation d'une URL locale");
+        devLog("Mode essai gratuit : utilisation d'une URL locale");
       }
       
-      console.log("Image téléchargée avec succès:", imageUrl);
+      devLog("Image téléchargée avec succès:", imageUrl);
       
       // Appel à l'API réelle d'analyse d'image de médicament avec retry automatique
       let analysisResult;
@@ -241,7 +242,7 @@ export default function MediScan() {
           
         } catch (error: any) {
           retryCount++;
-          console.log(`🔄 Tentative ${retryCount}/${maxRetries} échouée:`, error.message);
+          devLog(`🔄 Tentative ${retryCount}/${maxRetries} échouée:`, error.message);
           
           if (retryCount >= maxRetries) {
             throw error; // Re-lancer l'erreur après tous les essais
@@ -296,7 +297,7 @@ export default function MediScan() {
               image_url: imageUrl,
               details_analyse: resultat.detailsAnalyse
             });
-            console.log("Analyse sauvegardée automatiquement dans Supabase");
+            devLog("Analyse sauvegardée automatiquement dans Supabase");
             toast.success("✅ Analyse sauvegardée dans votre historique", {
               duration: 2000,
               style: {
@@ -356,6 +357,9 @@ export default function MediScan() {
 
   // Gérer l'authentification avec Supabase
   useEffect(() => {
+    // Masquer complètement la console en production
+    hideConsoleInProduction();
+    
     // Charger le compteur d'analyses gratuites depuis localStorage
     const savedCount = localStorage.getItem('freeAnalysesCount');
     if (savedCount) {
@@ -372,7 +376,7 @@ export default function MediScan() {
       const refreshToken = hashParams.get('refresh_token') || queryParams.get('refresh_token');
       
       if (accessToken && refreshToken) {
-        console.log('🔐 Tokens OAuth détectés, connexion en cours...');
+        devLog('🔐 Tokens OAuth détectés, connexion en cours...');
         
         // Nettoyer l'URL
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -405,7 +409,7 @@ export default function MediScan() {
     handleOAuthCallback();
     
     const { data: { subscription } } = AuthService.onAuthStateChange((currentUser, session) => {
-      console.log('🔄 État d\'authentification changé:', { user: !!currentUser, session: !!session });
+      devLog('🔄 État d\'authentification changé:', { user: !!currentUser, session: !!session });
       setIsAuthenticated(!!currentUser);
       setUser(currentUser);
     });
@@ -828,45 +832,56 @@ export default function MediScan() {
                   </motion.div>
                 </div>
 
-                {/* Section PharmaAI - Positionnée comme les cartes d'accueil */}
+                {/* Section PharmaAI - TEMPORAIREMENT DÉSACTIVÉE */}
+                {/*
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-8"
+                  className="mt-12"
                 >
-                  <div className="text-center mb-6">
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                      Assistant <span className="text-[#5AB0E2]">PharmaAI</span>
+                  <div className="text-center mb-8">
+                    <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                      Asistan<span className="text-[#5AB0E2]">PharmaAI</span>
                     </h3>
-                    <p className="text-gray-600">
-                      Posez vos questions sur les médicaments à notre IA spécialisée
+                    <p className="text-gray-600 text-lg">
+                      İlaç sorularınızı uzman yapay zekamıza sorun
                     </p>
                   </div>
                   
                   <motion.div
-                    whileHover={{ y: -5, boxShadow: '0 15px 30px -5px rgba(137, 207, 240, 0.3)' }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ y: -8, boxShadow: '0 20px 40px -10px rgba(89, 195, 240, 0.4)' }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setEtape(Etape.PHARMA_AI)}
-                    className="overflow-hidden rounded-2xl bg-gradient-to-br from-white to-cyan-50 border border-[#59C3F0]/30 shadow-lg transition-all duration-300 cursor-pointer group"
+                    className="max-w-lg mx-auto overflow-hidden rounded-3xl bg-gradient-to-br from-white via-cyan-50 to-blue-50 border-2 border-[#59C3F0]/20 shadow-xl transition-all duration-500 cursor-pointer group relative"
                   >
-                    <div className="h-full p-8 flex flex-col items-center justify-center">
-                      <div className="w-20 h-20 bg-[#59C3F0]/20 rounded-full flex items-center justify-center mb-6 group-hover:bg-[#59C3F0]/30 transition-all duration-300">
-                        <svg className="w-10 h-10 text-[#59C3F0] group-hover:text-[#3D9AD2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                    
+                    <div className="relative h-full p-10 flex flex-col items-center justify-center">
+                      <div className="relative w-24 h-24 bg-gradient-to-br from-[#59C3F0]/30 to-[#3D9AD2]/30 rounded-full flex items-center justify-center mb-8 group-hover:scale-110 transition-all duration-500 shadow-lg">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#59C3F0]/20 to-[#3D9AD2]/20 rounded-full animate-pulse"></div>
+                        <svg className="relative w-12 h-12 text-[#59C3F0] group-hover:text-[#3D9AD2] transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                         </svg>
                       </div>
-                      <h3 className="text-xl font-bold mb-3 text-center text-gray-800 group-hover:text-[#59C3F0] transition-colors">
-                        Chat avec PharmaAI
+                      
+                      <h3 className="text-2xl font-bold mb-4 text-center bg-gradient-to-r from-gray-800 via-[#59C3F0] to-gray-800 bg-clip-text text-transparent group-hover:from-[#59C3F0] group-hover:via-[#3D9AD2] group-hover:to-[#59C3F0] transition-all duration-500">
+                        PharmaAI ile sohbet edin
                       </h3>
-                      <p className="text-gray-600 text-center mb-4 group-hover:text-gray-700 transition-colors">
-                        Obtenez des réponses instantanées sur vos médicaments
+                      
+                      <p className="text-gray-600 text-center mb-8 group-hover:text-gray-700 transition-colors duration-300 leading-relaxed">
+                        İlaçlarınızla ilgili anında yanıtlar alın
                       </p>
-                      <div className="bg-[#59C3F0] hover:bg-[#3D9AD2] text-white py-2 px-6 rounded-full transition-colors font-medium">
-                        Ouvrir le chat
+                      
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#59C3F0] to-[#3D9AD2] rounded-full blur-lg opacity-0 group-hover:opacity-50 transition-opacity duration-300"></div>
+                        <button className="relative bg-gradient-to-r from-[#59C3F0] to-[#3D9AD2] hover:from-[#3D9AD2] hover:to-[#59C3F0] text-white py-3 px-8 rounded-full font-semibold transition-all duration-300 transform group-hover:scale-105 shadow-lg">
+                          Sohbeti aç
+                        </button>
                       </div>
                     </div>
                   </motion.div>
                 </motion.div>
+                */}
               </motion.div>
             )}
 
@@ -919,6 +934,8 @@ export default function MediScan() {
               </motion.div>
             )}
 
+            {/* Section PharmaAI - TEMPORAIREMENT DÉSACTIVÉE */}
+            {/*
             {etape === Etape.PHARMA_AI && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -944,7 +961,6 @@ export default function MediScan() {
                   </motion.button>
                 </div>
 
-                {/* PharmaAI intégré dans le layout principal */}
                 <div className="rounded-2xl overflow-hidden bg-white shadow-lg border border-[#59C3F0]/20 h-[600px]">
                   <PharmaAI 
                     user={user}
@@ -953,6 +969,7 @@ export default function MediScan() {
                 </div>
               </motion.div>
             )}
+            */}
 
             {etape === Etape.RESULTAT && resultat && (
               <motion.div
@@ -1030,4 +1047,4 @@ export default function MediScan() {
       )}
     </div>
   );
-} 
+}
