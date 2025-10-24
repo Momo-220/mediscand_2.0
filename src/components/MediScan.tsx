@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { Toaster, toast } from 'react-hot-toast';
 import HistoriqueAnalyses from './HistoriqueAnalyses';
 import LoginForm from './LoginForm';
-import PharmaAI from './PharmaAI';
+// import PharmaAI from './PharmaAI'; // Temporairement désactivé
 import AboutPage from './AboutPage';
 import SplashScreen from './SplashScreen';
 import { AuthService, AnalysesService, StorageService, SupabaseAnalyse } from '../supabase';
@@ -24,8 +24,8 @@ enum Etape {
   ANALYSE = 'ANALYSE',
   RESULTAT = 'RESULTAT',
   HISTORIQUE = 'HISTORIQUE',
-  CAMERA = 'CAMERA',
-  PHARMA_AI = 'PHARMA_AI'
+  CAMERA = 'CAMERA'
+  // PHARMA_AI = 'PHARMA_AI' // Temporairement désactivé
 }
 
 // Définir l'interface AnalyseResultat
@@ -598,12 +598,6 @@ export default function MediScan() {
               {isAuthenticated ? (
                 <>
                   <button
-                    onClick={() => setEtape(Etape.PHARMA_AI)}
-                    className="px-3 py-1.5 bg-[#59C3F0]/90 hover:bg-[#59C3F0] text-white rounded-md text-sm transition-all"
-                  >
-                    Pharma AI
-                  </button>
-                  <button
                     onClick={handleShowHistorique}
                     className="px-3 py-1.5 bg-[#89CFF0]/90 hover:bg-[#89CFF0] text-white rounded-md text-sm transition-all"
                   >
@@ -661,15 +655,6 @@ export default function MediScan() {
                 <div className="flex flex-col space-y-2 bg-white/90 p-3 rounded-lg shadow-md border border-[#89CFF0]/20">
                   {isAuthenticated ? (
                     <>
-                      <button
-                        onClick={() => {
-                          setEtape(Etape.PHARMA_AI);
-                          setShowMobileMenu(false);
-                        }}
-                        className="w-full px-3 py-2 bg-[#59C3F0]/90 hover:bg-[#59C3F0] text-white rounded-md text-sm transition-all text-left"
-                      >
-                        Pharma AI
-                      </button>
                       <button
                         onClick={() => {
                           handleShowHistorique();
