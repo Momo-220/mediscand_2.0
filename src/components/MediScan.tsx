@@ -585,7 +585,7 @@ export default function MediScan() {
             <div className="block sm:hidden">
               <button 
                 onClick={() => setShowMobileMenu(!showMobileMenu)} 
-                className="p-2 rounded-md bg-blue-50 hover:bg-blue-100 transition-colors"
+                className="p-2 rounded-md bg-blue-50 hover:bg-blue-100"
               >
                 <svg className="w-6 h-6 text-[#5AB0E2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showMobileMenu ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
@@ -599,19 +599,19 @@ export default function MediScan() {
                 <>
                   <button
                     onClick={handleShowHistorique}
-                    className="px-3 py-1.5 bg-[#89CFF0]/90 hover:bg-[#89CFF0] text-white rounded-md text-sm transition-all"
+                    className="px-3 py-1.5 bg-[#89CFF0]/90 hover:bg-[#89CFF0] text-white rounded-md text-sm"
                   >
                     Historique
                   </button>
                   <button
                     onClick={() => setShowAboutPage(true)}
-                    className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm transition-all"
+                    className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm"
                   >
                     À propos
                   </button>
                   <button
                     onClick={handleSignOut}
-                    className="px-3 py-1.5 bg-gray-200/70 hover:bg-gray-200 text-gray-700 rounded-md text-sm transition-all"
+                    className="px-3 py-1.5 bg-gray-200/70 hover:bg-gray-200 text-gray-700 rounded-md text-sm"
                   >
                     Déconnexion
                   </button>
@@ -620,13 +620,13 @@ export default function MediScan() {
                 <>
                   <button
                     onClick={() => setShowAboutPage(true)}
-                    className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm transition-all"
+                    className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm"
                   >
                     À propos
                   </button>
                   <button
                     onClick={handleShowLoginForm}
-                    className="px-3 py-1.5 bg-[#89CFF0]/90 hover:bg-[#89CFF0] text-white rounded-md text-sm transition-all"
+                    className="px-3 py-1.5 bg-[#89CFF0]/90 hover:bg-[#89CFF0] text-white rounded-md text-sm"
                   >
                     Connexion
                   </button>
@@ -636,7 +636,7 @@ export default function MediScan() {
                 <button
                   onClick={handleSaveAnalyse}
                   disabled={!isAuthenticated || saveSuccess}
-                  className={`px-3 py-1 rounded-md text-sm transition-all ${
+                  className={`px-3 py-1 rounded-md text-sm ${
                     saveSuccess
                       ? 'bg-green-500 text-white'
                       : isAuthenticated
@@ -660,7 +660,7 @@ export default function MediScan() {
                           handleShowHistorique();
                           setShowMobileMenu(false);
                         }}
-                        className="w-full px-3 py-2 bg-[#89CFF0]/90 hover:bg-[#89CFF0] text-white rounded-md text-sm transition-all text-left"
+                        className="w-full px-3 py-2 bg-[#89CFF0]/90 hover:bg-[#89CFF0] text-white rounded-md text-sm text-left"
                       >
                         Historique
                       </button>
@@ -669,7 +669,7 @@ export default function MediScan() {
                           setShowAboutPage(true);
                           setShowMobileMenu(false);
                         }}
-                        className="w-full px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm transition-all text-left"
+                        className="w-full px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm text-left"
                       >
                         À propos
                       </button>
@@ -678,7 +678,7 @@ export default function MediScan() {
                           handleSignOut();
                           setShowMobileMenu(false);
                         }}
-                        className="w-full px-3 py-2 bg-gray-200/70 hover:bg-gray-200 text-gray-700 rounded-md text-sm transition-all text-left"
+                        className="w-full px-3 py-2 bg-gray-200/70 hover:bg-gray-200 text-gray-700 rounded-md text-sm text-left"
                       >
                         Déconnexion
                       </button>
@@ -690,7 +690,7 @@ export default function MediScan() {
                           setShowAboutPage(true);
                           setShowMobileMenu(false);
                         }}
-                        className="w-full px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm transition-all text-left"
+                        className="w-full px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm text-left"
                       >
                         À propos
                       </button>
@@ -699,7 +699,7 @@ export default function MediScan() {
                           handleShowLoginForm();
                           setShowMobileMenu(false);
                         }}
-                        className="w-full px-3 py-2 bg-[#89CFF0]/90 hover:bg-[#89CFF0] text-white rounded-md text-sm transition-all text-left"
+                        className="w-full px-3 py-2 bg-[#89CFF0]/90 hover:bg-[#89CFF0] text-white rounded-md text-sm text-left"
                       >
                         Connexion
                       </button>
@@ -712,7 +712,7 @@ export default function MediScan() {
                         setShowMobileMenu(false);
                       }}
                       disabled={!isAuthenticated || saveSuccess}
-                      className={`w-full px-3 py-2 text-sm text-left transition-all rounded-md ${
+                      className={`w-full px-3 py-2 text-sm text-left rounded-md ${
                         saveSuccess
                           ? 'bg-green-500 text-white'
                           : isAuthenticated
