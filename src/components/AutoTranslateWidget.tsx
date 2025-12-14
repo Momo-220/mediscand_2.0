@@ -1,12 +1,23 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { devLog, devError, devWarn, hideConsoleInProduction } from '../utils/logger';
+
+// Flag global pour éviter les re-initialisations multiples
+let isTranslationInitialized = false;
+let translationInProgress = false;
 
 export const AutoTranslateWidget = () => {
   const [isClient, setIsClient] = useState(false);
+  const observerRef = useRef<MutationObserver | null>(null);
+  const watcherTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fonction pour forcer la suppression de l'icône Google Translate
   const hideGoogleTranslateIcon = () => {
+    // Vérifier qu'on est côté client et que le DOM est prêt
+    if (typeof window === 'undefined' || !document.body) {
+      return;
+    }
+    
     try {
       // Sélecteurs pour tous les éléments Google Translate possibles
       const selectors = [
@@ -115,10 +126,24 @@ export const AutoTranslateWidget = () => {
     }
   };
 
-  // Fonction pour démarrer l'observateur de mutations
+  // Fonction pour démarrer l'observateur de mutations (optimisée)
   const startMutationObserver = () => {
+    // Vérifier qu'on est côté client et que le DOM est prêt
+    if (typeof window === 'undefined' || !document.body) {
+      return;
+    }
+    
+    // Si un observateur existe déjà, le nettoyer
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+    
     try {
       const observer = new MutationObserver((mutations) => {
+        // Debouncing : ne traiter qu'une fois toutes les 200ms
+        if (translationInProgress) return;
+        
+        let hasGoogleElements = false;
         mutations.forEach((mutation) => {
           if (mutation.type === 'childList') {
             mutation.addedNodes.forEach((node) => {
@@ -126,13 +151,17 @@ export const AutoTranslateWidget = () => {
                 // Vérifier si le nœud ajouté contient des éléments Google Translate
                 const googleElements = node.querySelectorAll('.goog-te-gadget, .goog-te-gadget-simple, .goog-te-gadget-icon, .goog-te-combo, .skiptranslate');
                 if (googleElements.length > 0 || node.classList.contains('goog-te-gadget') || node.classList.contains('skiptranslate')) {
-                  devLog('🔍 Nouvel élément Google Translate détecté, masquage automatique...');
-                  hideGoogleTranslateIcon();
+                  hasGoogleElements = true;
                 }
               }
             });
           }
         });
+        
+        if (hasGoogleElements) {
+          devLog('🔍 Nouvel élément Google Translate détecté, masquage automatique...');
+          hideGoogleTranslateIcon();
+        }
       });
 
       // Observer les changements dans le body
@@ -140,6 +169,17 @@ export const AutoTranslateWidget = () => {
         childList: true,
         subtree: true
       });
+      
+      observerRef.current = observer;
+
+      // Arrêter l'observateur après 30 secondes pour éviter les surcharges
+      setTimeout(() => {
+        if (observerRef.current) {
+          observerRef.current.disconnect();
+          observerRef.current = null;
+          devLog('⏹️ Observateur de mutations arrêté automatiquement');
+        }
+      }, 30000);
 
       devLog('👁️ Observateur de mutations Google Translate démarré');
     } catch (error) {
@@ -147,19 +187,27 @@ export const AutoTranslateWidget = () => {
     }
   };
 
-  // Fonction pour surveiller continuellement l'icône Google Translate
+  // Fonction pour surveiller continuellement l'icône Google Translate (optimisée)
   const startContinuousIconWatcher = () => {
+    // Nettoyer le timeout précédent si existe
+    if (watcherTimeoutRef.current) {
+      clearTimeout(watcherTimeoutRef.current);
+    }
+    
     try {
-      // Vérifier toutes les 200ms pendant 60 secondes (plus agressif)
+      // Vérifier toutes les 500ms pendant 20 secondes (moins agressif pour éviter les glitches)
+      let checkCount = 0;
+      const maxChecks = 40; // 20 secondes / 500ms
+      
       const checkInterval = setInterval(() => {
+        checkCount++;
         hideGoogleTranslateIcon();
-      }, 200);
-
-      // Arrêter la surveillance après 60 secondes
-      setTimeout(() => {
-        clearInterval(checkInterval);
-        devLog('⏹️ Surveillance continue de l\'icône arrêtée');
-      }, 60000);
+        
+        if (checkCount >= maxChecks) {
+          clearInterval(checkInterval);
+          devLog('⏹️ Surveillance continue de l\'icône arrêtée');
+        }
+      }, 500);
 
       devLog('🔄 Surveillance continue de l\'icône Google Translate démarrée');
     } catch (error) {
@@ -167,20 +215,21 @@ export const AutoTranslateWidget = () => {
     }
   };
 
-  // Fonction pour surveiller le contenu non traduit
+  // Fonction pour surveiller le contenu non traduit (DÉSACTIVÉE pour éviter les glitches)
   const startContentWatcher = (browserLang: string) => {
+    // Cette fonction est désactivée car elle peut causer des glitches
+    // La traduction unique suffit généralement
+    devLog('👀 Surveillance du contenu désactivée (optimisation)');
+    return;
+    
+    // Code désactivé mais conservé pour référence
+    /*
     try {
-      // Vérifier périodiquement si le contenu est traduit
       const checkInterval = setInterval(() => {
         const untranslatedElements = document.querySelectorAll('*:not(.translated):not(.notranslate)');
         const hasFrenchText = Array.from(untranslatedElements).some(element => {
           const text = element.textContent || '';
-          // Mots français courants dans MediScan (liste étendue)
-          const frenchWords = ['Analyser', 'Médicament', 'Historique', 'Connexion', 'Inscription', 'PharmaAI', 'Comment ça marche', 'À propos', 
-                              'Caméra', 'Télécharger', 'Résultat', 'Dosage', 'Posologie', 'Contre-indication', 'Effets secondaires', 
-                              'Interactions', 'Précautions', 'Conservation', 'Laboratoire', 'Forme pharmaceutique', 'Classe thérapeutique',
-                              'Indications', 'Se connecter', 'Créer un compte', 'Mot de passe', 'Email', 'Nom', 'Prénom', 'Annuler', 'Valider',
-                              'Retour', 'Suivant', 'Précédent', 'Fermer', 'Ouvrir', 'Sauvegarder', 'Supprimer', 'Modifier', 'Rechercher'];
+          const frenchWords = ['Analyser', 'Médicament', 'Historique', 'Connexion', 'Inscription'];
           return frenchWords.some(word => text.includes(word));
         });
 
@@ -188,254 +237,19 @@ export const AutoTranslateWidget = () => {
           devLog('🔍 Contenu français détecté, re-traduction...');
           forceRetranslation(browserLang);
         }
-      }, 1000); // Vérifier toutes les 1 seconde (plus agressif)
+      }, 2000);
 
-      // Arrêter la surveillance après 60 secondes (plus long)
       setTimeout(() => {
         clearInterval(checkInterval);
         devLog('⏹️ Surveillance du contenu arrêtée');
-      }, 60000);
+      }, 20000);
 
       devLog('👀 Surveillance du contenu non traduit démarrée');
     } catch (error) {
       devError('❌ Erreur lors du démarrage de la surveillance:', error);
     }
+    */
   };
-
-  useEffect(() => {
-    setIsClient(true);
-    
-    // Masquer complètement la console en production
-    hideConsoleInProduction();
-    
-    // Attendre que l'hydratation soit terminée
-    const timer = setTimeout(() => {
-      // 1. Détection de la langue du navigateur
-      const browserLang = navigator.language.split('-')[0]; 
-      // Ex: 'en-US' → 'en', 'zh-CN' → 'zh'
-
-      devLog('🌐 Langue détectée pour MediScan:', browserLang);
-
-      // 2. Si ce n'est pas français, activer la traduction IMMÉDIATE
-      if (browserLang !== 'fr') {
-      
-      // 3. Démarrer la traduction immédiatement (sans attendre Google Translate)
-      devLog('🚀 Démarrage de la traduction IMMÉDIATE...');
-      
-      // Masquer l'icône immédiatement
-      hideGoogleTranslateIcon();
-      
-      // Démarrer l'observateur de mutations immédiatement
-      startMutationObserver();
-      
-      // Démarrer la surveillance continue immédiatement
-      startContinuousIconWatcher();
-      
-      // Vérifier si Google Translate est déjà chargé
-      if (typeof (window as any).google !== 'undefined' && (window as any).google.translate) {
-        devLog('✅ Google Translate déjà chargé - traduction immédiate !');
-        initializeTranslation(browserLang);
-        return;
-      }
-      
-      // 4. Charger le script Google Translate avec gestion d'erreur
-      const script = document.createElement('script');
-      script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-      script.async = true;
-      script.onload = () => {
-        devLog('📥 Script Google Translate chargé avec succès');
-      };
-      script.onerror = () => {
-        devWarn('⚠️ Google Translate bloqué par le navigateur/bloqueur de pub');
-        // Fallback : afficher un message à l'utilisateur
-        showTranslationBlockedMessage(browserLang);
-      };
-      document.body.appendChild(script);
-
-      // 4. Initialiser le widget (fonction callback)
-      (window as any).googleTranslateElementInit = () => {
-        new (window as any).google.translate.TranslateElement(
-          {
-            pageLanguage: 'fr',        // Langue source du site (français)
-            includedLanguages: '',      // Toutes les langues supportées
-            autoDisplay: false,         // Masquer le sélecteur Google
-            layout: 0,                  // Layout minimal
-            multilanguagePage: true,    // Support multi-langues
-          },
-          'google_translate_element_hidden' // ID du conteneur caché
-        );
-
-         // 5. Déclencher la traduction automatique IMMÉDIATEMENT (plus d'attente)
-         devLog('⚡ Traduction immédiate déclenchée !');
-         initializeTranslation(browserLang);
-         
-         // 6. Forcer la re-traduction après 1 seconde pour s'assurer que tout est traduit
-         setTimeout(() => {
-           forceRetranslation(browserLang);
-         }, 1000);
-         
-         // 7. Forcer une deuxième re-traduction après 2 secondes pour les éléments dynamiques
-         setTimeout(() => {
-           forceRetranslation(browserLang);
-         }, 2000);
-       };
-     } else {
-       devLog('🇫🇷 MediScan en français (langue par défaut)');
-     }
-    }, 1000); // Attendre 1 seconde après l'hydratation
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, []);
-
-  // Ne pas rendre le composant tant que l'hydratation n'est pas terminée
-  if (!isClient) {
-    return null;
-  }
-
-  // Fonction pour initialiser la traduction
-  const initializeTranslation = (browserLang: string) => {
-    try {
-      const select = document.querySelector('.goog-te-combo') as HTMLSelectElement;
-      if (select) {
-        select.value = browserLang;
-        select.dispatchEvent(new Event('change'));
-        devLog('✅ MediScan traduit vers', browserLang);
-        showTranslationNotification(browserLang);
-        
-        // Forcer la suppression de l'icône Google Translate après traduction
-        setTimeout(() => {
-          hideGoogleTranslateIcon();
-        }, 1000); // Réduit de 2000ms à 1000ms
-        
-        // Démarrer la surveillance du contenu non traduit
-        startContentWatcher(browserLang);
-        
-      } else {
-        devLog('⏳ Sélecteur Google Translate pas encore prêt, nouvelle tentative...');
-        // Réduire l'intervalle de 500ms à 200ms pour une réponse plus rapide
-        setTimeout(() => initializeTranslation(browserLang), 200);
-      }
-    } catch (error) {
-      devError('❌ Erreur lors de la traduction:', error);
-      showTranslationBlockedMessage(browserLang);
-    }
-  };
-
-   // Fonction pour forcer la re-traduction
-   const forceRetranslation = (browserLang: string) => {
-     try {
-       const select = document.querySelector('.goog-te-combo') as HTMLSelectElement;
-       if (select) {
-         // Forcer la re-traduction en changeant temporairement la langue
-         const originalValue = select.value;
-         select.value = 'fr'; // Revenir au français
-         select.dispatchEvent(new Event('change'));
-         
-         // Puis retraduire vers la langue cible (plus rapide)
-         setTimeout(() => {
-           select.value = browserLang;
-           select.dispatchEvent(new Event('change'));
-           devLog('🔄 Re-traduction forcée vers', browserLang);
-           
-           // Forcer la traduction des éléments React
-           forceReactTranslation();
-           
-           // Masquer à nouveau l'icône (plus rapide)
-           setTimeout(() => {
-             hideGoogleTranslateIcon();
-           }, 500); // Réduit de 1000ms à 500ms
-         }, 200); // Réduit de 500ms à 200ms
-       }
-     } catch (error) {
-       devError('❌ Erreur lors de la re-traduction:', error);
-     }
-   };
-
-   // Fonction pour forcer la traduction des éléments React
-   const forceReactTranslation = () => {
-     try {
-       // Déclencher un événement personnalisé pour forcer la re-traduction
-       const event = new CustomEvent('forceTranslation', {
-         detail: { timestamp: Date.now() }
-       });
-       document.dispatchEvent(event);
-       
-       // Forcer la re-traduction de tous les éléments textuels
-       const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, div, button, a, label');
-       textElements.forEach(element => {
-         if (element.textContent && element.textContent.trim()) {
-           // Marquer l'élément pour qu'il soit re-traduit
-           element.classList.remove('translated');
-           element.classList.add('notranslate');
-           setTimeout(() => {
-             element.classList.remove('notranslate');
-           }, 100);
-         }
-       });
-       
-       devLog('⚛️ Traduction React forcée');
-     } catch (error) {
-       devError('❌ Erreur lors de la traduction React:', error);
-     }
-   };
-
-
-
-
-   // Fonction pour afficher la notification de traduction
-   const showTranslationNotification = (browserLang: string) => {
-     const notification = document.createElement('div');
-     notification.innerHTML = `🌐 MediScan traduit en ${getLanguageName(browserLang)}`;
-     notification.style.cssText = `
-       position: fixed;
-       top: 20px;
-       right: 20px;
-       background: linear-gradient(135deg, #89CFF0, #5AB0E2);
-       color: white;
-       padding: 12px 20px;
-       border-radius: 25px;
-       font-size: 14px;
-       font-weight: 500;
-       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-       z-index: 9999;
-       animation: slideIn 0.3s ease-out;
-     `;
-     document.body.appendChild(notification);
-     
-     setTimeout(() => {
-       notification.style.animation = 'slideOut 0.3s ease-in';
-       setTimeout(() => notification.remove(), 300);
-     }, 3000);
-   };
-
-   // Fonction pour afficher un message si la traduction est bloquée
-   const showTranslationBlockedMessage = (browserLang: string) => {
-     const notification = document.createElement('div');
-     notification.innerHTML = `⚠️ Traduction bloquée - Désactivez votre bloqueur de pub pour traduire en ${getLanguageName(browserLang)}`;
-     notification.style.cssText = `
-       position: fixed;
-       top: 20px;
-       right: 20px;
-       background: linear-gradient(135deg, #F59E0B, #D97706);
-       color: white;
-       padding: 12px 20px;
-       border-radius: 25px;
-       font-size: 14px;
-       font-weight: 500;
-       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-       z-index: 9999;
-       animation: slideIn 0.3s ease-out;
-       max-width: 300px;
-     `;
-     document.body.appendChild(notification);
-     
-     setTimeout(() => {
-       notification.style.animation = 'slideOut 0.3s ease-in';
-       setTimeout(() => notification.remove(), 300);
-     }, 5000);
-   };
 
   // Fonction pour obtenir le nom de la langue
   const getLanguageName = (code: string): string => {
@@ -508,8 +322,477 @@ export const AutoTranslateWidget = () => {
     return languages[code] || code.toUpperCase();
   };
 
-  // 6. Conteneur invisible pour le widget Google Translate
-  return <div id="google_translate_element_hidden" style={{ display: 'none' }} />;
+  // Fonction pour afficher la notification de traduction
+  const showTranslationNotification = (browserLang: string) => {
+    // Vérifier qu'on est côté client
+    if (typeof window === 'undefined' || !document.body) {
+      return;
+    }
+    
+    const notification = document.createElement('div');
+    notification.innerHTML = `🌐 MediScan traduit en ${getLanguageName(browserLang)}`;
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #89CFF0, #5AB0E2);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      z-index: 9999;
+      animation: slideIn 0.3s ease-out;
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.animation = 'slideOut 0.3s ease-in';
+      setTimeout(() => notification.remove(), 300);
+    }, 3000);
+  };
+
+  // Fonction pour afficher un message si la traduction est bloquée
+  const showTranslationBlockedMessage = (browserLang: string) => {
+    // Vérifier qu'on est côté client
+    if (typeof window === 'undefined' || !document.body) {
+      return;
+    }
+    
+    // Vérifier si une notification existe déjà
+    const existingNotification = document.querySelector('.translation-blocked-notification');
+    if (existingNotification) {
+      return; // Ne pas afficher plusieurs notifications
+    }
+
+    const notification = document.createElement('div');
+    notification.className = 'translation-blocked-notification';
+    const langName = getLanguageName(browserLang);
+    notification.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span>⚠️</span>
+        <div>
+          <strong>Traduction indisponible</strong><br>
+          <small style="opacity: 0.9;">Désactivez votre bloqueur de pub ou utilisez Chrome pour traduire en ${langName}</small>
+        </div>
+      </div>
+    `;
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      z-index: 99999;
+      animation: slideIn 0.3s ease-out;
+      max-width: 350px;
+      line-height: 1.5;
+    `;
+    
+    // Ajouter l'animation CSS si elle n'existe pas
+    if (!document.querySelector('#translation-animations')) {
+      const style = document.createElement('style');
+      style.id = 'translation-animations';
+      style.textContent = `
+        @keyframes slideIn {
+          from {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        @keyframes slideOut {
+          from {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          to {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(notification);
+    
+    // Fermer la notification après 8 secondes
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.remove();
+          }
+        }, 300);
+      }
+    }, 8000);
+  };
+
+  // Fonction pour forcer la traduction des éléments React (DÉSACTIVÉE car cause des glitches)
+  const forceReactTranslation = () => {
+    // Cette fonction est désactivée car elle peut causer des glitches de rendu
+    devLog('⚛️ Traduction React désactivée (optimisation)');
+    return;
+    
+    // Code désactivé mais conservé pour référence
+    /*
+    try {
+      const event = new CustomEvent('forceTranslation', {
+        detail: { timestamp: Date.now() }
+      });
+      document.dispatchEvent(event);
+      
+      const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, div, button, a, label');
+      textElements.forEach(element => {
+        if (element.textContent && element.textContent.trim()) {
+          element.classList.remove('translated');
+          element.classList.add('notranslate');
+          setTimeout(() => {
+            element.classList.remove('notranslate');
+          }, 100);
+        }
+      });
+      
+      devLog('⚛️ Traduction React forcée');
+    } catch (error) {
+      devError('❌ Erreur lors de la traduction React:', error);
+    }
+    */
+  };
+
+  // Fonction pour forcer la re-traduction (simplifiée pour éviter les glitches)
+  const forceRetranslation = (browserLang: string) => {
+    // Éviter les re-traductions multiples
+    if (translationInProgress) {
+      devLog('⏳ Traduction en cours, re-traduction annulée');
+      return;
+    }
+    
+    try {
+      // Vérifier que Google Translate est toujours disponible
+      if (typeof (window as any).google === 'undefined' || 
+          typeof (window as any).google.translate === 'undefined') {
+        devWarn('⚠️ Google Translate non disponible pour la re-traduction');
+        return;
+      }
+
+      const select = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+      if (select) {
+        // Vérifier que la langue est supportée
+        const supportedLangs = Array.from(select.options).map(opt => opt.value);
+        const targetLang = supportedLangs.includes(browserLang) ? browserLang : 'en';
+        
+        // Si déjà traduit vers la bonne langue, ne rien faire
+        if (select.value === targetLang) {
+          devLog('✅ Déjà traduit vers', targetLang);
+          // Juste masquer l'icône
+          hideGoogleTranslateIcon();
+          return;
+        }
+        
+        translationInProgress = true;
+        
+        // Appliquer directement la traduction sans toggle
+        select.value = targetLang;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        devLog('🔄 Re-traduction vers', targetLang);
+        
+        // Masquer l'icône après un délai
+        setTimeout(() => {
+          hideGoogleTranslateIcon();
+          translationInProgress = false;
+        }, 1000);
+        
+      } else {
+        devWarn('⚠️ Sélecteur Google Translate non trouvé pour la re-traduction');
+      }
+    } catch (error: any) {
+      translationInProgress = false;
+      devError('❌ Erreur lors de la re-traduction:', error);
+    }
+  };
+
+  // Fonction pour initialiser la traduction (optimisée)
+  const initializeTranslation = (browserLang: string, retryCount = 0) => {
+    // Éviter les re-traductions multiples
+    if (translationInProgress) {
+      devLog('⏳ Traduction déjà en cours, en attente...');
+      return;
+    }
+    
+    translationInProgress = true;
+    
+    try {
+      // Vérifier que Google Translate est bien chargé
+      if (typeof (window as any).google === 'undefined' || 
+          typeof (window as any).google.translate === 'undefined') {
+        translationInProgress = false;
+        if (retryCount < 10) {
+          devLog(`⏳ Google Translate pas encore chargé, nouvelle tentative (${retryCount + 1}/10)...`);
+          setTimeout(() => initializeTranslation(browserLang, retryCount + 1), 500);
+        } else {
+          devError('❌ Google Translate n\'a pas pu être chargé après plusieurs tentatives');
+          showTranslationBlockedMessage(browserLang);
+        }
+        return;
+      }
+
+      const select = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+      if (select) {
+        // Vérifier que la langue est supportée
+        const supportedLangs = Array.from(select.options).map(opt => opt.value);
+        const targetLang = supportedLangs.includes(browserLang) ? browserLang : 'en'; // Fallback vers anglais
+        
+        if (targetLang !== browserLang) {
+          devWarn(`⚠️ Langue ${browserLang} non supportée, utilisation de ${targetLang}`);
+        }
+        
+        select.value = targetLang;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        devLog('✅ MediScan traduit vers', targetLang);
+        showTranslationNotification(targetLang);
+        
+        // Marquer comme traduit pour éviter les re-traductions
+        isTranslationInitialized = true;
+        
+        // Forcer la suppression de l'icône Google Translate après traduction
+        setTimeout(() => {
+          hideGoogleTranslateIcon();
+          translationInProgress = false;
+        }, 1500);
+        
+        // Désactiver la surveillance du contenu (cause des glitches)
+        // startContentWatcher(targetLang);
+        
+      } else {
+        translationInProgress = false;
+        if (retryCount < 15) {
+          devLog(`⏳ Sélecteur Google Translate pas encore prêt, nouvelle tentative (${retryCount + 1}/15)...`);
+          setTimeout(() => initializeTranslation(browserLang, retryCount + 1), 400);
+        } else {
+          devError('❌ Impossible de trouver le sélecteur Google Translate après plusieurs tentatives');
+          showTranslationBlockedMessage(browserLang);
+        }
+      }
+    } catch (error: any) {
+      translationInProgress = false;
+      devError('❌ Erreur lors de la traduction:', error);
+      if (retryCount < 3) {
+        setTimeout(() => initializeTranslation(browserLang, retryCount + 1), 1000);
+      } else {
+        showTranslationBlockedMessage(browserLang);
+      }
+    }
+  };
+
+  useEffect(() => {
+    // S'assurer qu'on est côté client
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
+    // Éviter les re-initialisations multiples (Fast Refresh)
+    if (isTranslationInitialized) {
+      devLog('🔄 Traduction déjà initialisée, passage du re-render');
+      return;
+    }
+    
+    setIsClient(true);
+    
+    // Masquer complètement la console en production
+    hideConsoleInProduction();
+    
+    // Attendre que l'hydratation soit terminée (plus de temps pour éviter les conflits)
+    // Utiliser requestAnimationFrame pour s'assurer que le DOM est complètement prêt
+    const initTranslation = () => {
+      // 1. Détection de la langue du navigateur avec fallback
+      let browserLang = 'fr'; // Par défaut français
+      try {
+        if (navigator.language) {
+          browserLang = navigator.language.split('-')[0].toLowerCase();
+        } else if ((navigator as any).userLanguage) {
+          browserLang = (navigator as any).userLanguage.split('-')[0].toLowerCase();
+        }
+      } catch (error) {
+        devWarn('⚠️ Impossible de détecter la langue du navigateur, utilisation du français par défaut');
+      }
+
+      devLog('🌐 Langue détectée pour MediScan:', browserLang);
+
+      // 2. Si ce n'est pas français, activer la traduction IMMÉDIATE
+      if (browserLang !== 'fr') {
+      
+        // 3. Définir la fonction callback AVANT de charger le script
+        // C'est crucial pour éviter l'erreur "Cannot access before initialization"
+        (window as any).googleTranslateElementInit = () => {
+          try {
+            devLog('📥 Google Translate callback appelé');
+            
+            // Vérifier que Google Translate est bien chargé
+            if (typeof (window as any).google === 'undefined' || 
+                typeof (window as any).google.translate === 'undefined' ||
+                typeof (window as any).google.translate.TranslateElement === 'undefined') {
+              throw new Error('Google Translate API non disponible');
+            }
+
+            // Initialiser le widget
+            new (window as any).google.translate.TranslateElement(
+              {
+                pageLanguage: 'fr',        // Langue source du site (français)
+                includedLanguages: '',      // Toutes les langues supportées
+                autoDisplay: false,         // Masquer le sélecteur Google
+                layout: 0,                  // Layout minimal
+                multilanguagePage: true,    // Support multi-langues
+              },
+              'google_translate_element_hidden' // ID du conteneur caché
+            );
+
+            // 5. Déclencher la traduction automatique IMMÉDIATEMENT
+            devLog('⚡ Traduction immédiate déclenchée !');
+            
+            // Attendre un peu que le widget soit prêt
+            setTimeout(() => {
+              initializeTranslation(browserLang);
+            }, 800);
+            
+            // 6. Une seule re-traduction pour éviter les glitches
+            setTimeout(() => {
+              if (!translationInProgress) {
+                forceRetranslation(browserLang);
+              }
+            }, 3000);
+          } catch (error: any) {
+            devError('❌ Erreur lors de l\'initialisation de Google Translate:', error);
+            showTranslationBlockedMessage(browserLang);
+          }
+        };
+      
+        // 3. Démarrer la traduction immédiatement (sans attendre Google Translate)
+        devLog('🚀 Démarrage de la traduction IMMÉDIATE...');
+        
+        // Masquer l'icône immédiatement
+        hideGoogleTranslateIcon();
+        
+        // Démarrer l'observateur de mutations immédiatement
+        startMutationObserver();
+        
+        // Démarrer la surveillance continue immédiatement
+        startContinuousIconWatcher();
+        
+        // Vérifier si Google Translate est déjà chargé
+        if (typeof (window as any).google !== 'undefined' && 
+            (window as any).google.translate &&
+            typeof (window as any).google.translate.TranslateElement !== 'undefined') {
+          devLog('✅ Google Translate déjà chargé - traduction immédiate !');
+          // Appeler directement la fonction callback
+          if (typeof (window as any).googleTranslateElementInit === 'function') {
+            (window as any).googleTranslateElementInit();
+          }
+          return;
+        }
+        
+        // 4. Vérifier si le script n'est pas déjà chargé
+        const existingScript = document.querySelector('script[src*="translate.google.com"]');
+        if (existingScript) {
+          devLog('📥 Script Google Translate déjà présent, utilisation de l\'existant');
+          // Attendre un peu et essayer d'initialiser
+          setTimeout(() => {
+            if (typeof (window as any).googleTranslateElementInit === 'function') {
+              (window as any).googleTranslateElementInit();
+            } else {
+              initializeTranslation(browserLang);
+            }
+          }, 500);
+          return;
+        }
+        
+        // 5. Charger le script Google Translate avec gestion d'erreur améliorée
+        const script = document.createElement('script');
+        script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+        script.async = true;
+        script.defer = true;
+        script.id = 'google-translate-script';
+        
+        // Timeout pour détecter si le script ne charge pas
+        const loadTimeout = setTimeout(() => {
+          devWarn('⚠️ Timeout: Google Translate ne se charge pas (peut être bloqué)');
+          showTranslationBlockedMessage(browserLang);
+        }, 10000); // 10 secondes de timeout
+        
+        script.onload = () => {
+          clearTimeout(loadTimeout);
+          devLog('📥 Script Google Translate chargé avec succès');
+        };
+        
+        script.onerror = (error) => {
+          clearTimeout(loadTimeout);
+          devWarn('⚠️ Google Translate bloqué par le navigateur/bloqueur de pub', error);
+          // Fallback : afficher un message à l'utilisateur
+          showTranslationBlockedMessage(browserLang);
+        };
+        
+        // Ajouter le script au document (dans head pour meilleure performance)
+        try {
+          const head = document.head || document.getElementsByTagName('head')[0];
+          if (head) {
+            head.appendChild(script);
+          } else {
+            // Fallback vers body si head n'existe pas
+            document.body.appendChild(script);
+          }
+        } catch (error) {
+          devError('❌ Erreur lors de l\'ajout du script:', error);
+          showTranslationBlockedMessage(browserLang);
+        }
+      } else {
+        devLog('🇫🇷 MediScan en français (langue par défaut)');
+      }
+    };
+    
+    // Utiliser requestAnimationFrame pour s'assurer que l'hydratation est terminée
+    // puis attendre un peu plus pour éviter les conflits avec les extensions
+    const frameId = requestAnimationFrame(() => {
+      setTimeout(() => {
+        initTranslation();
+      }, 500); // Délai plus long pour stabilité
+    });
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      
+      // Nettoyer les observateurs
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
+      if (watcherTimeoutRef.current) {
+        clearTimeout(watcherTimeoutRef.current);
+        watcherTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
+  // Ne pas rendre le composant tant que l'hydratation n'est pas terminée
+  // Pour éviter les erreurs d'hydratation, on retourne toujours le même élément
+  // mais on ne l'utilise que côté client
+  return (
+    <div 
+      id="google_translate_element_hidden" 
+      style={{ display: 'none' }} 
+      suppressHydrationWarning
+    />
+  );
 };
 
 export default AutoTranslateWidget;

@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --no-lint",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "keep-alive": "node scripts/keep-alive-supabase.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.0",

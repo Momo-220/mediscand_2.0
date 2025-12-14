@@ -550,7 +550,7 @@ export default function MediScan() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-cyan-50 to-blue-50 p-4 sm:p-6 lg:p-8" suppressHydrationWarning>
+    <div className="min-h-screen p-4 sm:p-6 lg:p-8" suppressHydrationWarning>
       {/* 🌐 Widget de traduction automatique - IMMÉDIAT */}
       <AutoTranslateWidget />
       
@@ -558,8 +558,8 @@ export default function MediScan() {
         <SplashScreen onComplete={() => setShowSplashScreen(false)} />
       )}
       
-      <div className="min-h-[calc(100vh-4rem)] rounded-3xl border-4 border-white/40 shadow-2xl overflow-hidden bg-white/90 backdrop-filter backdrop-blur-xl" suppressHydrationWarning>
-        <header className="py-4 px-4 sm:px-6 backdrop-blur-md bg-white/70 border-b border-[#89CFF0]/20 sticky top-0 z-10 mb-8">
+      <div className="min-h-[calc(100vh-4rem)] rounded-2xl overflow-hidden glass-card" suppressHydrationWarning>
+        <header className="py-5 px-4 sm:px-6 backdrop-blur-md bg-white/80 border-b border-gray-200/50 sticky top-0 z-10">
           <div className="max-w-6xl mx-auto flex flex-wrap justify-between items-center">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 sm:w-12 sm:h-12 relative">
@@ -569,13 +569,13 @@ export default function MediScan() {
                   className="w-full h-full object-contain rounded-full"
                 />
               </div>
-              <h1 className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#89CFF0] to-[#5AB0E2]">
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900">
                 MediScan
               </h1>
               
               {/* Badge d'essai gratuit pour les utilisateurs non connectés */}
               {!isAuthenticated && freeAnalysesCount < FREE_ANALYSES_LIMIT && (
-                <div className="hidden sm:flex ml-2 px-3 py-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full text-xs font-semibold text-white shadow-lg">
+                <div className="hidden sm:flex ml-3 badge-modern">
                   🎁 {FREE_ANALYSES_LIMIT - freeAnalysesCount} essai{FREE_ANALYSES_LIMIT - freeAnalysesCount > 1 ? 's' : ''} gratuit{FREE_ANALYSES_LIMIT - freeAnalysesCount > 1 ? 's' : ''}
                 </div>
               )}
@@ -585,9 +585,9 @@ export default function MediScan() {
             <div className="block sm:hidden">
               <button 
                 onClick={() => setShowMobileMenu(!showMobileMenu)} 
-                className="p-2 rounded-md bg-blue-50 hover:bg-blue-100"
+                className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 smooth-transition"
               >
-                <svg className="w-6 h-6 text-[#5AB0E2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showMobileMenu ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
                 </svg>
               </button>
@@ -599,19 +599,19 @@ export default function MediScan() {
                 <>
                   <button
                     onClick={handleShowHistorique}
-                    className="px-3 py-1.5 bg-[#89CFF0]/90 hover:bg-[#89CFF0] text-white rounded-md text-sm"
+                    className="px-4 py-2 bg-gradient-to-r from-[#2D68C4] to-[#2555A3] hover:from-[#2555A3] hover:to-[#1E4482] text-white rounded-full text-sm font-medium smooth-transition shadow-sm hover:shadow-md"
                   >
                     Historique
                   </button>
                   <button
                     onClick={() => setShowAboutPage(true)}
-                    className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm"
+                    className="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-full text-sm font-medium border border-gray-300 smooth-transition"
                   >
                     À propos
                   </button>
                   <button
                     onClick={handleSignOut}
-                    className="px-3 py-1.5 bg-gray-200/70 hover:bg-gray-200 text-gray-700 rounded-md text-sm"
+                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm font-medium smooth-transition"
                   >
                     Déconnexion
                   </button>
@@ -620,13 +620,13 @@ export default function MediScan() {
                 <>
                   <button
                     onClick={() => setShowAboutPage(true)}
-                    className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm"
+                    className="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-full text-sm font-medium border border-gray-300 smooth-transition"
                   >
                     À propos
                   </button>
                   <button
                     onClick={handleShowLoginForm}
-                    className="px-3 py-1.5 bg-[#89CFF0]/90 hover:bg-[#89CFF0] text-white rounded-md text-sm"
+                    className="px-4 py-2 bg-gradient-to-r from-[#2D68C4] to-[#2555A3] hover:from-[#2555A3] hover:to-[#1E4482] text-white rounded-full text-sm font-medium smooth-transition shadow-sm hover:shadow-md"
                   >
                     Connexion
                   </button>
@@ -636,12 +636,12 @@ export default function MediScan() {
                 <button
                   onClick={handleSaveAnalyse}
                   disabled={!isAuthenticated || saveSuccess}
-                  className={`px-3 py-1 rounded-md text-sm ${
+                  className={`px-4 py-2 rounded-full text-sm font-medium smooth-transition ${
                     saveSuccess
-                      ? 'bg-green-500 text-white'
+                      ? 'bg-green-500 text-white shadow-sm'
                       : isAuthenticated
-                      ? 'bg-[#89CFF0] hover:bg-[#74B9FF] text-white'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      ? 'bg-gradient-to-r from-[#2D68C4] to-[#2555A3] hover:from-[#2555A3] hover:to-[#1E4482] text-white shadow-sm hover:shadow-md'
+                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
                 >
                   {saveSuccess ? '✓ Sauvegardé' : 'Sauvegarder'}
@@ -652,7 +652,7 @@ export default function MediScan() {
             {/* Menu mobile déroulant */}
             {showMobileMenu && (
               <div className="w-full mt-4 sm:hidden">
-                <div className="flex flex-col space-y-2 bg-white/90 p-3 rounded-lg shadow-md border border-[#89CFF0]/20">
+                <div className="flex flex-col space-y-2 bg-white p-3 rounded-xl shadow-lg border border-gray-200">
                   {isAuthenticated ? (
                     <>
                       <button
@@ -660,7 +660,7 @@ export default function MediScan() {
                           handleShowHistorique();
                           setShowMobileMenu(false);
                         }}
-                        className="w-full px-3 py-2 bg-[#89CFF0]/90 hover:bg-[#89CFF0] text-white rounded-md text-sm text-left"
+                        className="w-full px-4 py-2.5 bg-gradient-to-r from-[#2D68C4] to-[#2555A3] text-white rounded-lg text-sm text-left font-medium smooth-transition"
                       >
                         Historique
                       </button>
@@ -669,7 +669,7 @@ export default function MediScan() {
                           setShowAboutPage(true);
                           setShowMobileMenu(false);
                         }}
-                        className="w-full px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm text-left"
+                        className="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm text-left font-medium smooth-transition"
                       >
                         À propos
                       </button>
@@ -678,7 +678,7 @@ export default function MediScan() {
                           handleSignOut();
                           setShowMobileMenu(false);
                         }}
-                        className="w-full px-3 py-2 bg-gray-200/70 hover:bg-gray-200 text-gray-700 rounded-md text-sm text-left"
+                        className="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm text-left font-medium smooth-transition"
                       >
                         Déconnexion
                       </button>
@@ -699,7 +699,7 @@ export default function MediScan() {
                           handleShowLoginForm();
                           setShowMobileMenu(false);
                         }}
-                        className="w-full px-3 py-2 bg-[#89CFF0]/90 hover:bg-[#89CFF0] text-white rounded-md text-sm text-left"
+                        className="w-full px-4 py-2.5 bg-gradient-to-r from-[#2D68C4] to-[#2555A3] text-white rounded-lg text-sm text-left font-medium smooth-transition"
                       >
                         Connexion
                       </button>
@@ -712,12 +712,12 @@ export default function MediScan() {
                         setShowMobileMenu(false);
                       }}
                       disabled={!isAuthenticated || saveSuccess}
-                      className={`w-full px-3 py-2 text-sm text-left rounded-md ${
+                      className={`w-full px-4 py-2.5 text-sm text-left rounded-lg font-medium smooth-transition ${
                         saveSuccess
                           ? 'bg-green-500 text-white'
                           : isAuthenticated
-                          ? 'bg-[#89CFF0] hover:bg-[#74B9FF] text-white'
-                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          ? 'bg-gradient-to-r from-[#2D68C4] to-[#2555A3] text-white'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       }`}
                     >
                       {saveSuccess ? '✓ Sauvegardé' : 'Sauvegarder'}
@@ -729,7 +729,7 @@ export default function MediScan() {
           </div>
         </header>
 
-        <main className="max-w-6xl mx-auto py-6 sm:py-8 px-4 sm:px-6">
+        <main className="max-w-6xl mx-auto py-8 sm:py-12 px-4 sm:px-6">
           <AnimatePresence mode="wait">
             {etape === Etape.ACCUEIL && (
               <motion.div
@@ -738,20 +738,20 @@ export default function MediScan() {
                 exit={{ opacity: 0, y: -20 }}
                 className="flex flex-col space-y-10"
               >
-                <div className="text-center">
-                  <h2 className="text-3xl font-bold mb-4 text-gray-800">
-                    Analysez <span className="text-[#5AB0E2]">votre médicament</span>
+                <div className="text-center mb-12">
+                  <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-gray-900 tracking-tight">
+                    Analysez vos <span className="bg-gradient-to-r from-[#2D68C4] to-[#6082B6] bg-clip-text text-transparent">médicaments</span>
                   </h2>
-                  <p className="text-gray-600 max-w-xl mx-auto">
-                    Scannez vos médicaments pour obtenir instantanément des informations détaillées et fiables
+                  <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                    Obtenez instantanément des informations détaillées et fiables sur vos médicaments
                   </p>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                   <motion.div
-                    whileHover={{ y: -5, boxShadow: '0 15px 30px -5px rgba(137, 207, 240, 0.3)' }}
+                    whileHover={{ y: -6 }}
                     whileTap={{ scale: 0.98 }}
-                    className="overflow-hidden rounded-2xl bg-gradient-to-br from-white to-blue-50 border border-[#89CFF0]/30 shadow-lg transition-all duration-300 group"
+                    className="card-modern group cursor-pointer"
                   >
                     <div
                       className="h-full p-8 flex flex-col items-center justify-center cursor-pointer"
@@ -767,19 +767,19 @@ export default function MediScan() {
                         onChange={handleFileChange}
                         className="hidden"
                       />
-                      <div className="w-20 h-20 bg-[#89CFF0]/20 rounded-full flex items-center justify-center mb-6 group-hover:bg-[#89CFF0]/30 transition-all duration-300">
-                        <svg className="w-10 h-10 text-[#5AB0E2] group-hover:text-[#3D9AD2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="icon-container mx-auto mb-6 group-hover:scale-105 smooth-transition">
+                        <svg className="w-10 h-10 text-[#2D68C4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
-                      <h3 className="text-xl font-bold mb-3 text-center text-gray-800 group-hover:text-[#5AB0E2] transition-colors">
+                      <h3 className="text-xl font-semibold mb-2 text-center text-gray-900">
                         Télécharger une image
                       </h3>
-                      <p className="text-gray-600 text-center mb-4 group-hover:text-gray-700 transition-colors">
+                      <p className="text-gray-600 text-center mb-6 text-sm">
                         Glissez une image ou cliquez pour parcourir
                       </p>
-                      <div className="border-2 border-dashed border-gray-200 rounded-lg p-3 w-full text-center group-hover:border-[#89CFF0]/50 transition-colors">
-                        <p className="text-sm text-gray-500 group-hover:text-gray-600">
+                      <div className="drop-zone p-4 text-center">
+                        <p className="text-sm text-gray-500">
                           PNG, JPG, JPEG (max. 5MB)
                         </p>
                       </div>
@@ -792,27 +792,27 @@ export default function MediScan() {
                   </motion.div>
 
                   <motion.div
-                    whileHover={{ y: -5, boxShadow: '0 15px 30px -5px rgba(137, 207, 240, 0.3)' }}
+                    whileHover={{ y: -6 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setEtape(Etape.CAMERA)}
-                    className="overflow-hidden rounded-2xl bg-gradient-to-br from-white to-blue-50 border border-[#89CFF0]/30 shadow-lg transition-all duration-300 cursor-pointer group"
+                    className="card-modern group cursor-pointer"
                   >
                     <div className="h-full p-8 flex flex-col items-center justify-center">
-                      <div className="w-20 h-20 bg-[#89CFF0]/20 rounded-full flex items-center justify-center mb-6 group-hover:bg-[#89CFF0]/30 transition-all duration-300">
-                        <svg className="w-10 h-10 text-[#5AB0E2] group-hover:text-[#3D9AD2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="icon-container mx-auto mb-6 group-hover:scale-105 smooth-transition">
+                        <svg className="w-10 h-10 text-[#2D68C4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                       </div>
-                      <h3 className="text-xl font-bold mb-3 text-center text-gray-800 group-hover:text-[#5AB0E2] transition-colors">
+                      <h3 className="text-xl font-semibold mb-2 text-center text-gray-900">
                         Utiliser l'appareil photo
                       </h3>
-                      <p className="text-gray-600 text-center mb-4 group-hover:text-gray-700 transition-colors">
+                      <p className="text-gray-600 text-center mb-6 text-sm">
                         Prendre une photo du médicament
                       </p>
-                      <div className="bg-[#89CFF0] hover:bg-[#74B9FF] text-white py-2 px-6 rounded-full transition-colors font-medium">
+                      <button className="btn-primary-modern">
                         Ouvrir la caméra
-                      </div>
+                      </button>
                     </div>
                   </motion.div>
                 </div>
@@ -904,18 +904,18 @@ export default function MediScan() {
                 exit={{ opacity: 0 }}
                 className="flex flex-col items-center justify-center py-20"
               >
-                <div className="relative w-32 h-32 sm:w-40 sm:h-40">
-                  <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-200 border-t-[#89CFF0] rounded-full animate-spin"></div>
-                  <div className="absolute top-3 left-3 right-3 bottom-3 bg-white rounded-full flex items-center justify-center">
+                <div className="relative w-32 h-32 sm:w-40 sm:h-40 mx-auto">
+                  <div className="loader-modern"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
                     <img 
                       src="/images/logo-app.png" 
                       alt="MediScan Logo" 
-                      className="w-24 h-24 sm:w-32 sm:h-32 object-contain rounded-full"
+                      className="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-full"
                     />
                   </div>
                 </div>
-                <p className="mt-8 text-xl font-medium text-gray-800">Analyse en cours...</p>
-                <p className="text-gray-600 mt-3 text-lg">Veuillez patienter quelques instants</p>
+                <p className="mt-8 text-xl font-semibold text-gray-900">Analyse en cours...</p>
+                <p className="text-gray-600 mt-2">Veuillez patienter quelques instants</p>
               </motion.div>
             )}
 
@@ -964,15 +964,15 @@ export default function MediScan() {
                 className="space-y-6"
                 suppressHydrationWarning
               >
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-2xl font-bold text-gray-900">
                     Résultat de l'analyse
                   </h2>
                   <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={retourAccueil}
-                    className="bg-[#89CFF0] hover:bg-[#74B9FF] text-white py-2 px-5 rounded-full flex items-center gap-2 transition-colors shadow-md hover:shadow-lg"
+                    className="btn-primary-modern flex items-center gap-2"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
