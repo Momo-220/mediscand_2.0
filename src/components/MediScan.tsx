@@ -550,7 +550,7 @@ export default function MediScan() {
   };
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8" suppressHydrationWarning>
+    <div className="min-h-screen p-2 sm:p-4 lg:p-6" suppressHydrationWarning>
       {/* 🌐 Widget de traduction automatique - IMMÉDIAT */}
       <AutoTranslateWidget />
       
@@ -558,24 +558,24 @@ export default function MediScan() {
         <SplashScreen onComplete={() => setShowSplashScreen(false)} />
       )}
       
-      <div className="min-h-[calc(100vh-4rem)] rounded-2xl overflow-hidden glass-card" suppressHydrationWarning>
-        <header className="py-5 px-4 sm:px-6 backdrop-blur-md bg-white/80 border-b border-gray-200/50 sticky top-0 z-10">
-          <div className="max-w-6xl mx-auto flex flex-wrap justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 relative">
+      <div className="min-h-[calc(100vh-2rem)] sm:min-h-[calc(100vh-4rem)] rounded-xl sm:rounded-2xl overflow-hidden glass-card" suppressHydrationWarning>
+        <header className="py-3 sm:py-5 px-3 sm:px-6 backdrop-blur-md bg-white/80 border-b border-gray-200/50 sticky top-0 z-10">
+          <div className="w-full max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 relative flex-shrink-0">
                 <img 
                   src="/images/logo-app.png" 
                   alt="MediScan Logo" 
                   className="w-full h-full object-contain rounded-full"
                 />
               </div>
-              <h1 className="text-lg sm:text-xl font-bold text-gray-900">
+              <h1 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900">
                 MediScan
               </h1>
               
               {/* Badge d'essai gratuit pour les utilisateurs non connectés */}
               {!isAuthenticated && freeAnalysesCount < FREE_ANALYSES_LIMIT && (
-                <div className="hidden sm:flex ml-3 badge-modern">
+                <div className="hidden md:flex ml-2 lg:ml-3 badge-modern text-xs sm:text-sm">
                   🎁 {FREE_ANALYSES_LIMIT - freeAnalysesCount} essai{FREE_ANALYSES_LIMIT - freeAnalysesCount > 1 ? 's' : ''} gratuit{FREE_ANALYSES_LIMIT - freeAnalysesCount > 1 ? 's' : ''}
                 </div>
               )}
@@ -651,8 +651,8 @@ export default function MediScan() {
             
             {/* Menu mobile déroulant */}
             {showMobileMenu && (
-              <div className="w-full mt-4 sm:hidden">
-                <div className="flex flex-col space-y-2 bg-white p-3 rounded-xl shadow-lg border border-gray-200">
+              <div className="w-full mt-3 sm:hidden">
+                <div className="flex flex-col space-y-2 bg-white p-3 rounded-lg shadow-lg border border-gray-200">
                   {isAuthenticated ? (
                     <>
                       <button
@@ -729,7 +729,7 @@ export default function MediScan() {
           </div>
         </header>
 
-        <main className="max-w-6xl mx-auto py-8 sm:py-12 px-4 sm:px-6">
+        <main className="w-full max-w-7xl mx-auto py-4 sm:py-8 lg:py-12 px-3 sm:px-4 lg:px-6">
           <AnimatePresence mode="wait">
             {etape === Etape.ACCUEIL && (
               <motion.div
@@ -738,23 +738,23 @@ export default function MediScan() {
                 exit={{ opacity: 0, y: -20 }}
                 className="flex flex-col space-y-10"
               >
-                <div className="text-center mb-12">
-                  <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-gray-900 tracking-tight">
+                <div className="text-center mb-6 sm:mb-10 lg:mb-12 px-2">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-gray-900 tracking-tight">
                     Analysez vos <span className="bg-gradient-to-r from-[#2D68C4] to-[#6082B6] bg-clip-text text-transparent">médicaments</span>
                   </h2>
-                  <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                  <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed px-4">
                     Obtenez instantanément des informations détaillées et fiables sur vos médicaments
                   </p>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 w-full max-w-5xl mx-auto px-2">
                   <motion.div
                     whileHover={{ y: -6 }}
                     whileTap={{ scale: 0.98 }}
                     className="card-modern group cursor-pointer"
                   >
                     <div
-                      className="h-full p-8 flex flex-col items-center justify-center cursor-pointer"
+                      className="h-full p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center cursor-pointer min-h-[200px] sm:min-h-[250px]"
                       onClick={() => fileInputRef.current?.click()}
                       onDragOver={handleDragOver}
                       onDragLeave={handleDragLeave}
@@ -767,19 +767,19 @@ export default function MediScan() {
                         onChange={handleFileChange}
                         className="hidden"
                       />
-                      <div className="icon-container mx-auto mb-6 group-hover:scale-105 smooth-transition">
-                        <svg className="w-10 h-10 text-[#2D68C4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="icon-container mx-auto mb-4 sm:mb-6 group-hover:scale-105 smooth-transition w-16 h-16 sm:w-20 sm:h-20">
+                        <svg className="w-8 h-8 sm:w-10 sm:h-10 text-[#2D68C4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
-                      <h3 className="text-xl font-semibold mb-2 text-center text-gray-900">
+                      <h3 className="text-base sm:text-lg lg:text-xl font-semibold mb-1 sm:mb-2 text-center text-gray-900 px-2">
                         Télécharger une image
                       </h3>
-                      <p className="text-gray-600 text-center mb-6 text-sm">
+                      <p className="text-gray-600 text-center mb-3 sm:mb-6 text-xs sm:text-sm px-2">
                         Glissez une image ou cliquez pour parcourir
                       </p>
-                      <div className="drop-zone p-4 text-center">
-                        <p className="text-sm text-gray-500">
+                      <div className="drop-zone p-2 sm:p-4 text-center w-full">
+                        <p className="text-xs sm:text-sm text-gray-500">
                           PNG, JPG, JPEG (max. 5MB)
                         </p>
                       </div>
@@ -797,20 +797,20 @@ export default function MediScan() {
                     onClick={() => setEtape(Etape.CAMERA)}
                     className="card-modern group cursor-pointer"
                   >
-                    <div className="h-full p-8 flex flex-col items-center justify-center">
-                      <div className="icon-container mx-auto mb-6 group-hover:scale-105 smooth-transition">
-                        <svg className="w-10 h-10 text-[#2D68C4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="h-full p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[200px] sm:min-h-[250px]">
+                      <div className="icon-container mx-auto mb-4 sm:mb-6 group-hover:scale-105 smooth-transition w-16 h-16 sm:w-20 sm:h-20">
+                        <svg className="w-8 h-8 sm:w-10 sm:h-10 text-[#2D68C4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                       </div>
-                      <h3 className="text-xl font-semibold mb-2 text-center text-gray-900">
+                      <h3 className="text-base sm:text-lg lg:text-xl font-semibold mb-1 sm:mb-2 text-center text-gray-900 px-2">
                         Utiliser l'appareil photo
                       </h3>
-                      <p className="text-gray-600 text-center mb-6 text-sm">
+                      <p className="text-gray-600 text-center mb-3 sm:mb-6 text-xs sm:text-sm px-2">
                         Prendre une photo du médicament
                       </p>
-                      <button className="btn-primary-modern">
+                      <button className="btn-primary-modern text-sm sm:text-base px-4 sm:px-6">
                         Ouvrir la caméra
                       </button>
                     </div>
@@ -875,20 +875,20 @@ export default function MediScan() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="rounded-2xl overflow-hidden bg-gray-800 shadow-xl p-6"
+                className="rounded-xl sm:rounded-2xl overflow-hidden bg-gray-800 shadow-xl p-3 sm:p-6"
               >
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
                   <button
                     onClick={retourAccueil}
-                    className="flex items-center text-gray-300 hover:text-blue-400 transition-colors"
+                    className="flex items-center text-gray-300 hover:text-blue-400 transition-colors text-sm sm:text-base"
                   >
-                    <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                     Retour
                   </button>
-                  <h2 className="text-xl font-bold">Prendre une photo</h2>
-                  <div className="w-20"></div>
+                  <h2 className="text-base sm:text-xl font-bold">Prendre une photo</h2>
+                  <div className="w-12 sm:w-20"></div>
                 </div>
                 <Camera 
                   onPhotoCapture={analyserImage} 
@@ -902,20 +902,20 @@ export default function MediScan() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex flex-col items-center justify-center py-20"
+                className="flex flex-col items-center justify-center py-12 sm:py-16 lg:py-20 px-4"
               >
-                <div className="relative w-32 h-32 sm:w-40 sm:h-40 mx-auto">
+                <div className="relative w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 mx-auto">
                   <div className="loader-modern"></div>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <img 
                       src="/images/logo-app.png" 
                       alt="MediScan Logo" 
-                      className="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-full"
+                      className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 object-contain rounded-full"
                     />
                   </div>
                 </div>
-                <p className="mt-8 text-xl font-semibold text-gray-900">Analyse en cours...</p>
-                <p className="text-gray-600 mt-2">Veuillez patienter quelques instants</p>
+                <p className="mt-6 sm:mt-8 text-lg sm:text-xl font-semibold text-gray-900">Analyse en cours...</p>
+                <p className="text-sm sm:text-base text-gray-600 mt-2 text-center">Veuillez patienter quelques instants</p>
               </motion.div>
             )}
 
@@ -961,20 +961,20 @@ export default function MediScan() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="space-y-6"
+                className="space-y-4 sm:space-y-6"
                 suppressHydrationWarning
               >
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-8 gap-3">
+                  <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
                     Résultat de l'analyse
                   </h2>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={retourAccueil}
-                    className="btn-primary-modern flex items-center gap-2"
+                    className="btn-primary-modern flex items-center gap-2 text-sm sm:text-base w-full sm:w-auto justify-center"
                   >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                     Nouvelle analyse

@@ -17,9 +17,31 @@ export const metadata: Metadata = {
     ],
     shortcut: '/images/logo-app.png'
   },
-  viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
-  manifest: '/manifest.json'
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'MediScan'
+  },
+  formatDetection: {
+    telephone: false
+  }
 };
+
+// Viewport doit être dans une fonction séparée pour Next.js 15+
+export function generateViewport() {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+    viewportFit: 'cover',
+    themeColor: [
+      { media: '(prefers-color-scheme: light)', color: '#2D68C4' },
+      { media: '(prefers-color-scheme: dark)', color: '#1E4482' }
+    ]
+  };
+}
 
 export default function RootLayout({
   children,

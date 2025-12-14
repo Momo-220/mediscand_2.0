@@ -173,21 +173,21 @@ export default function LoginForm({ onClose, onLoginSuccess }: LoginFormProps) {
 
   return (
     <motion.div 
-      className="fixed inset-0 bg-black/75 backdrop-blur-lg z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/75 backdrop-blur-lg z-50 flex items-center justify-center p-3 sm:p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
       <motion.div 
-        className="bg-gradient-to-br from-gray-900 to-gray-950 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden text-white border border-gray-800"
+        className="bg-gradient-to-br from-gray-900 to-gray-950 rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden text-white border border-gray-800 max-h-[95vh] overflow-y-auto"
         initial={{ scale: 0.9, y: 20, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         transition={{ delay: 0.1, type: "spring", stiffness: 120 }}
       >
-        <div className="p-8 space-y-6">
+        <div className="p-4 sm:p-8 space-y-4 sm:space-y-6">
           {/* Logo et titre */}
-          <div className="flex flex-col items-center justify-center mb-8">
-            <div className="w-20 h-20 mb-4 relative rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 p-0.5">
+          <div className="flex flex-col items-center justify-center mb-4 sm:mb-8">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 mb-3 sm:mb-4 relative rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 p-0.5">
               <div className="w-full h-full rounded-full overflow-hidden bg-gray-950 p-1 flex items-center justify-center">
                 <Image 
                   src="/images/logo-app.png"
@@ -198,21 +198,21 @@ export default function LoginForm({ onClose, onLoginSuccess }: LoginFormProps) {
                 />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="text-xl sm:text-2xl font-bold text-white">
               {isSignUp ? 'Créer un compte' : 'Connexion'}
             </h2>
           </div>
           
           {/* Formulaire de connexion/inscription */}
-          <form onSubmit={isSignUp ? handleSignUp : handleLogin} className="space-y-5">
+          <form onSubmit={isSignUp ? handleSignUp : handleLogin} className="space-y-3 sm:space-y-5">
             <div className="space-y-1">
-              <label htmlFor="email" className="text-sm font-medium text-gray-300">Adresse email</label>
+              <label htmlFor="email" className="text-xs sm:text-sm font-medium text-gray-300">Adresse email</label>
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-500"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-500 text-sm sm:text-base"
                 placeholder="Votre adresse email"
                 required
               />
@@ -220,13 +220,13 @@ export default function LoginForm({ onClose, onLoginSuccess }: LoginFormProps) {
             
             {isSignUp || (
               <div className="space-y-1">
-                <label htmlFor="password" className="text-sm font-medium text-gray-300">Mot de passe</label>
+                <label htmlFor="password" className="text-xs sm:text-sm font-medium text-gray-300">Mot de passe</label>
                 <input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-500"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-500 text-sm sm:text-base"
                   placeholder="Mot de passe"
                   required
                 />
@@ -236,7 +236,7 @@ export default function LoginForm({ onClose, onLoginSuccess }: LoginFormProps) {
             <motion.button
               type="submit"
               disabled={isLoading}
-              className="w-full px-4 py-3.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed mt-2"
+              className="w-full px-4 py-2.5 sm:py-3.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed mt-2 text-sm sm:text-base"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -245,11 +245,11 @@ export default function LoginForm({ onClose, onLoginSuccess }: LoginFormProps) {
           </form>
           
           {/* Séparateur */}
-          <div className="relative my-6">
+          <div className="relative my-4 sm:my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-700/60"></div>
             </div>
-            <div className="relative flex justify-center text-sm">
+            <div className="relative flex justify-center text-xs sm:text-sm">
               <span className="px-2 bg-gradient-to-br from-gray-900 to-gray-950 text-gray-400">OU</span>
             </div>
           </div>
@@ -258,11 +258,11 @@ export default function LoginForm({ onClose, onLoginSuccess }: LoginFormProps) {
           <motion.button
             onClick={handleGoogleSignIn}
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3.5 bg-white text-gray-800 rounded-lg hover:bg-gray-100 transition-all disabled:opacity-70 font-medium"
+            className="w-full flex items-center justify-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3.5 bg-white text-gray-800 rounded-lg hover:bg-gray-100 transition-all disabled:opacity-70 font-medium text-sm sm:text-base"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                 fill="#4285F4"
@@ -284,9 +284,9 @@ export default function LoginForm({ onClose, onLoginSuccess }: LoginFormProps) {
           </motion.button>
           
           {/* Liens de navigation */}
-          <div className="space-y-3 mt-4">
+          <div className="space-y-2 sm:space-y-3 mt-3 sm:mt-4">
             {/* Lien pour changer de mode */}
-            <div className="text-center text-sm text-gray-400">
+            <div className="text-center text-xs sm:text-sm text-gray-400">
               {isSignUp ? (
                 <p>
                   Déjà un compte?{' '}
@@ -329,10 +329,10 @@ export default function LoginForm({ onClose, onLoginSuccess }: LoginFormProps) {
           {/* Bouton de fermeture */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-400 hover:text-white transition-colors p-1"
             aria-label="Fermer"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
