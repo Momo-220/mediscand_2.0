@@ -40,9 +40,9 @@ export async function POST(request: NextRequest) {
     const imageBytes = await imageFile.arrayBuffer();
     const base64Image = Buffer.from(imageBytes).toString("base64");
 
-    // Utiliser le modèle Gemini 2.0 Flash (dernière version pour l'analyse d'images)
+    // Utiliser le modèle Gemini 2.5 Flash (dernière version stable, performant pour images)
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash-exp",
+      model: "gemini-2.5-flash",
     });
 
     // Définir le prompt pour l'analyse de médicaments, optimisé pour Gemini 2.0 Flash

@@ -30,8 +30,9 @@ Règles importantes:
 7. Si tu n'es pas sûr d'une information, admets-le clairement`;
 
 // Configurer le modèle Gemini pour le chat
+// Utilisation de Gemini 2.5 Flash (dernière version, performant)
 const modelConfig = {
-  model: 'gemini-2.0-flash-exp',
+  model: 'gemini-2.5-flash',
   generationConfig: {
     temperature: 0.7,
     topP: 0.9,
@@ -178,9 +179,9 @@ export async function analyserImageMedicament(imageBase64: string): Promise<stri
     console.log("✅ Image validée, initialisation du modèle Gemini...");
 
     // Initialiser le modèle avec des configurations optimisées pour la vitesse
-    // Utilisation de Gemini 2.0 Flash (dernière version disponible)
+    // Utilisation de Gemini 2.5 Flash (dernière version, performant)
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.0-flash-exp",
+      model: "gemini-2.5-flash",
       generationConfig: {
         temperature: 0.1, // Plus déterministe = plus rapide
         topK: 16, // Réduit pour plus de vitesse
